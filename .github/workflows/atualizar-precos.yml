@@ -1,16 +1,14 @@
 
-name: Atualizar preços PreçoAí
+name: Teste de coleta PreçoAí
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '17 8 * * *'
 
 permissions:
   contents: read
 
 jobs:
-  coletar-e-sincronizar:
+  teste-coleta:
     runs-on: ubuntu-latest
 
     defaults:
@@ -29,10 +27,14 @@ jobs:
       - name: Instalar dependências
         run: npm install
 
-      - name: Coletar preços da SEFAZ-AM
-        run: node index.js --max-paginas=10 --pausa-ms=2000
+      - name: Verificar catálogo
+        run: |
+          test -f ../dados/catalogo-sefaz.json
 
-      - name: Enviar dados ao Firebase
+      - name: Coletar amostra da SEFAZ-AM
+        run: node index.js --max-paginas=1 --pausa-ms=2000
+
+      - name: Simular sincronização
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: node sincronizar-firestore.js --executar
+        run: node sincronizar-firestore.js

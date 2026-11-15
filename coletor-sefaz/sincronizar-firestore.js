@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { lerCredencial } from "./credencial.js";
+import { lerCredencial, PROJETO_ESPERADO } from "./credencial.js";
 import { normalizar, tempoParaData, extrairBairro, extrairTamanho, nomeExcluido, mediana } from "./enriquecer.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -10,16 +10,56 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 const DIR_COLETAS = path.join(__dirname, "dados", "coletas");
 const CATALOGO_PATH = path.join(ROOT_DIR, "dados", "catalogo-sefaz.json");
-const CHAVE_PATH = path.join(__dirname, "serviceAccountKey.json");
-const PROJETO_ESPERADO = "precoai-sistema";
-const TAMANHO_LOTE = 450;
 
-function argumentos() {
-  return Object.fromEntries(process.argv.slice(2).map((arg) => {
-    const [chave, ...valor] = arg.replace(/^--/, "").split("=");
-    return [chave, valor.join("=") || true];
-  }));
+export const COLECOES = ["produtos", "estabelecimentos", "precos", "resumo"];
+const TAMANHO_LOTE = 450;          // limite do Firestore é 500 operações por lote
+const MAX_OFERTAS = 500;
+const MAX_BYTES_DOC = 800_000;     // margem de segurança sobre o limite de 1 MiB por documento
+const COBERTURA_MINIMA = 0.8;      // fração mínima do catálogo que precisa ter preços válidos
+const AMOSTRA_PRECOS = 200;
+const AMOSTRA_ESTABELECIMENTOS = 100;
+
+// ---------------------------------------------------------------- argumentos
+
+export function lerArgumentos(argv = process.argv.slice(2)) {
+  const permitidos = new Set(["executar", "produto", "limite", "dias"]);
+  const bruto = {};
+  for (const arg of argv) {
+    if (!arg.startsWith("--")) throw new Error(`Argumento inválido: "${arg}".`);
+    const [chave, ...resto] = arg.slice(2).split("=");
+    if (!permitidos.has(chave)) throw new Error(`Argumento desconhecido: --${chave}.`);
+    bruto[chave] = resto.length ? resto.join("=") : true;
+  }
+
+  const inteiro = (nome, min, max, padrao) => {
+    if (bruto[nome] === undefined) return padrao;
+    const texto = bruto[nome];
+    if (typeof texto !== "string" || !/^\d+$/.test(texto)) {
+      throw new Error(`--${nome} precisa ser um número inteiro (recebido: ${texto === true ? "vazio" : `"${texto}"`}).`);
+    }
+    const n = Number(texto);
+    if (n < min || n > max) throw new Error(`--${nome} precisa estar entre ${min} e ${max}.`);
+    return n;
+  };
+
+  if (bruto.executar !== undefined && bruto.executar !== true) throw new Error("--executar não aceita valor.");
+  let produto = null;
+  if (bruto.produto !== undefined) {
+    if (typeof bruto.produto !== "string" || !/^[a-z0-9-]+$/.test(bruto.produto)) {
+      throw new Error("--produto precisa ser um id do catálogo (letras minúsculas, números e hífen).");
+    }
+    produto = bruto.produto;
+  }
+  const limite = inteiro("limite", 0, 100000, 0);
+  const dias = inteiro("dias", 1, 365, 7);
+  const executar = bruto.executar === true;
+  if (executar && limite > 0) {
+    throw new Error("--limite só pode ser usado na simulação: ele corta preços e deixaria o resumo inconsistente.");
+  }
+  return { executar, produto, limite, dias };
 }
+
+// ---------------------------------------------------------------- utilidades
 
 function hashId(valor) {
   return crypto.createHash("sha256").update(String(valor)).digest("hex").slice(0, 32);
@@ -33,6 +73,7 @@ function dataValida(valor, fallback) {
 function coordenadasValidas(latitude, longitude) {
   const lat = Number(latitude);
   const lon = Number(longitude);
+  if (latitude === null || longitude === null || latitude === undefined || longitude === undefined) return null;
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
   if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
   return { latitude: lat, longitude: lon };
@@ -44,7 +85,12 @@ function extrairMunicipio(endereco = "") {
   return match ? match[1].toLowerCase().replace(/\b\w/g, (letra) => letra.toUpperCase()) : "Manaus";
 }
 
-function carregarColetas(filtroProduto) {
+const arredondar = (n) => Math.round(n * 100) / 100;
+const tamanhoBytes = (obj) => Buffer.byteLength(JSON.stringify(obj), "utf8");
+
+// ---------------------------------------------------------------- leitura
+
+export function carregarColetas(filtroProduto) {
   if (!fs.existsSync(DIR_COLETAS)) {
     throw new Error(`Pasta de coletas não encontrada: ${DIR_COLETAS}`);
   }
@@ -60,22 +106,41 @@ function carregarColetas(filtroProduto) {
       : "Nenhum JSON de produto encontrado. Execute o coletor SEFAZ-AM antes.");
   }
 
+  const vistos = new Set();
   return arquivos.map((arquivo) => {
-    const caminho = path.join(DIR_COLETAS, arquivo);
-    const dados = JSON.parse(fs.readFileSync(caminho, "utf8"));
-    if (!dados.produtoId || !Array.isArray(dados.resultados)) {
+    let dados;
+    try { dados = JSON.parse(fs.readFileSync(path.join(DIR_COLETAS, arquivo), "utf8")); }
+    catch { throw new Error(`JSON inválido no arquivo ${arquivo}.`); }
+    if (!dados || !dados.produtoId || !Array.isArray(dados.resultados)) {
       throw new Error(`Formato inválido no arquivo ${arquivo}.`);
     }
+    if (dados.produtoId !== path.basename(arquivo, ".json")) {
+      throw new Error(`O produtoId "${dados.produtoId}" não corresponde ao nome do arquivo ${arquivo}.`);
+    }
+    if (vistos.has(dados.produtoId)) throw new Error(`Produto repetido nas coletas: ${dados.produtoId}.`);
+    vistos.add(dados.produtoId);
     return dados;
   });
 }
 
-function carregarCatalogo() {
-  const catalogo = JSON.parse(fs.readFileSync(CATALOGO_PATH, "utf8"));
-  return new Map(catalogo.produtos.map((p) => [p.id, p]));
+export function carregarCatalogo(caminho = CATALOGO_PATH) {
+  if (!fs.existsSync(caminho)) throw new Error(`Catálogo não encontrado: ${caminho}`);
+  let catalogo;
+  try { catalogo = JSON.parse(fs.readFileSync(caminho, "utf8")); }
+  catch { throw new Error("O catálogo não é um JSON válido."); }
+  if (!catalogo || !Array.isArray(catalogo.produtos) || !catalogo.produtos.length) {
+    throw new Error("Catálogo inválido: esperado { produtos: [ ... ] } com pelo menos um produto.");
+  }
+  const mapa = new Map();
+  for (const p of catalogo.produtos) {
+    if (!p || typeof p.id !== "string" || !p.id) throw new Error("Catálogo inválido: produto sem id.");
+    if (mapa.has(p.id)) throw new Error(`Catálogo inválido: id repetido (${p.id}).`);
+    mapa.set(p.id, p);
+  }
+  return mapa;
 }
 
-const arredondar = (n) => Math.round(n * 100) / 100;
+// ---------------------------------------------------------------- preparação
 
 // Enriquece cada item: data real da nota, bairro, tamanho da embalagem e preço por kg/litro.
 // Descarta descrições que não são produto (ADICIONAL, PORÇÃO...) e preços fora da faixa (outliers).
@@ -91,7 +156,7 @@ function prepararItens(coleta, meta, maxDias) {
     if (nomeExcluido(item.nomeEncontrado || "")) { descartes.nome++; continue; }
     const coletadoEm = dataValida(item.consultadoEm, base);
     const emitidoEm = tempoParaData(item.tempoDesdeEmissao, coletadoEm) || coletadoEm;
-    // Só entram notas dos últimos N dias (o que passa disso é apagado do Firestore pelo limpar-antigos.js).
+    // Só entram notas dos últimos N dias.
     if (Date.now() - emitidoEm.getTime() > maxDias * 864e5) { descartes.antigo++; continue; }
     const quantidade = extrairTamanho(item.nomeEncontrado || "", unidade);
     itens.push({
@@ -115,17 +180,20 @@ function prepararItens(coleta, meta, maxDias) {
   return { itens, descartes, unidade };
 }
 
-function montarPlano(coletas, catalogo, limitePrecos = 0, maxDias = 7) {
+export function montarPlano(coletas, catalogo, limitePrecos = 0, maxDias = 7) {
+  const sincronizadoEm = new Date();
   const produtos = new Map();
   const estabelecimentos = new Map();
   const resumo = new Map();
   const precos = [];
   const vistos = new Set();
+  const semOfertas = [];
   const descartes = { nome: 0, outlier: 0, antigo: 0 };
 
   for (const coleta of coletas) {
-    if (!coleta.resultados.length) continue;
-    const meta = catalogo.get(coleta.produtoId) || {};
+    const meta = catalogo.get(coleta.produtoId);
+    if (!meta) throw new Error(`Produto não encontrado no catálogo: ${coleta.produtoId}`);
+
     const consultadoEm = dataValida(coleta.consultadoEm);
     const { itens, descartes: d, unidade } = prepararItens(coleta, meta, maxDias);
     descartes.nome += d.nome; descartes.outlier += d.outlier; descartes.antigo += d.antigo;
@@ -142,7 +210,10 @@ function montarPlano(coletas, catalogo, limitePrecos = 0, maxDias = 7) {
       fonte: "Busca Preço SEFAZ-AM",
       atualizadoEm: consultadoEm
     };
-    produtos.set(produto.id, produto);
+
+    // Tudo do produto fica em listas locais: só entra na base se sobrar ao menos um preço válido.
+    const estLocais = new Map();
+    const precosLocais = [];
     const ofertas = [];
 
     for (const item of itens) {
@@ -154,8 +225,8 @@ function montarPlano(coletas, catalogo, limitePrecos = 0, maxDias = 7) {
       const coordenadas = coordenadasValidas(item.latitude, item.longitude);
       const bairro = extrairBairro(endereco);
 
-      if (!estabelecimentos.has(estabelecimentoId)) {
-        estabelecimentos.set(estabelecimentoId, {
+      if (!estabelecimentos.has(estabelecimentoId) && !estLocais.has(estabelecimentoId)) {
+        estLocais.set(estabelecimentoId, {
           id: estabelecimentoId, nome: nomeEstabelecimento, endereco: endereco || null, bairro,
           municipio: extrairMunicipio(endereco),
           latitude: coordenadas?.latitude ?? null, longitude: coordenadas?.longitude ?? null,
@@ -169,11 +240,13 @@ function montarPlano(coletas, catalogo, limitePrecos = 0, maxDias = 7) {
       if (vistos.has(chavePreco)) continue;
       vistos.add(chavePreco);
 
-      precos.push({
+      precosLocais.push({
         id: hashId(chavePreco), produtoId: coleta.produtoId, estabelecimentoId,
         preco: item.preco,
-        dataConsulta: item.emitidoEm,          // data real da nota (antes era a hora da coleta)
-        coletadoEm: item.coletadoEm,
+        dataConsulta: item.emitidoEm,          // data da nota fiscal (campo mantido por compatibilidade com o app)
+        emitidoEm: item.emitidoEm,             // idem, com nome explícito
+        coletadoEm: item.coletadoEm,           // quando o coletor viu o preço
+        sincronizadoEm,                        // quando esta rodada gravou o registro
         nomeEncontrado: item.nomeEncontrado || coleta.nomeExibicao || null,
         unidadeReferencia: unidade,
         quantidadeEmbalagem: item.quantidade,
@@ -183,8 +256,8 @@ function montarPlano(coletas, catalogo, limitePrecos = 0, maxDias = 7) {
         endereco: endereco || null
       });
 
-      // Ofertas com tamanho identificado entram no "menor preço" (precisam de coordenadas).
-      // As sem tamanho (precoReferencia null) só aparecem na página do produto, sem ranking por kg.
+      // Ofertas com tamanho identificado entram no ranking por kg/litro (precisam de coordenadas).
+      // As sem tamanho (precoReferencia null) aparecem só como preço de embalagem.
       if (item.precoReferencia !== null ? coordenadas : true) {
         ofertas.push({
           estabelecimentoId, mercado: nomeEstabelecimento, bairro, endereco: endereco || null,
@@ -195,9 +268,30 @@ function montarPlano(coletas, catalogo, limitePrecos = 0, maxDias = 7) {
       }
     }
 
-    // Documento único por produto: o app lê só estes 30 documentos (em vez de milhares de preços).
+    if (!precosLocais.length || !ofertas.length) { semOfertas.push(coleta.produtoId); continue; }
+
     ofertas.sort((a, b) => (a.precoReferencia ?? Infinity) - (b.precoReferencia ?? Infinity) || a.preco - b.preco);
-    resumo.set(produto.id, { ...produto, ofertas: ofertas.slice(0, 500), totalOfertas: ofertas.length });
+    const melhorReferencia = ofertas.find((o) => o.precoReferencia !== null);
+    const menorEmbalagem = Math.min(...ofertas.map((o) => o.preco));
+
+    // Documento único por produto: o app lê só estes documentos em vez de milhares de preços.
+    let lista = ofertas.slice(0, MAX_OFERTAS);
+    const doc = {
+      ...produto,
+      ofertas: lista,
+      totalOfertas: ofertas.length,
+      menorPrecoEmbalagem: menorEmbalagem,
+      ...(melhorReferencia ? { menorPrecoReferencia: melhorReferencia.precoReferencia } : {})
+    };
+    while (lista.length > 1 && tamanhoBytes(doc) > MAX_BYTES_DOC) {
+      lista = lista.slice(0, Math.floor(lista.length * 0.8));
+      doc.ofertas = lista;
+    }
+
+    produtos.set(produto.id, produto);
+    resumo.set(produto.id, doc);
+    for (const [id, est] of estLocais) estabelecimentos.set(id, est);
+    precos.push(...precosLocais);
   }
 
   return {
@@ -205,11 +299,58 @@ function montarPlano(coletas, catalogo, limitePrecos = 0, maxDias = 7) {
     estabelecimentos: [...estabelecimentos.values()],
     precos: limitePrecos > 0 ? precos.slice(0, limitePrecos) : precos,
     resumo: [...resumo.values()],
-    descartes
+    descartes,
+    semOfertas
   };
 }
 
+// Confere a nova base ANTES de qualquer gravação. Lança erro com todos os problemas encontrados.
+export function validarPlano(plano, catalogo, { parcial = false } = {}) {
+  const problemas = [];
+  const idsProdutos = new Set(plano.produtos.map((p) => p.id));
+  const idsEstab = new Set(plano.estabelecimentos.map((e) => e.id));
+
+  if (!plano.produtos.length) problemas.push("Nenhum produto com preço válido.");
+  if (!plano.precos.length) problemas.push("Nenhum preço válido.");
+
+  if (!parcial && catalogo.size) {
+    const minimo = Math.ceil(catalogo.size * COBERTURA_MINIMA);
+    if (plano.produtos.length < minimo) {
+      problemas.push(`Cobertura insuficiente: ${plano.produtos.length} de ${catalogo.size} produtos do catálogo (mínimo ${minimo}). A coleta parece incompleta.`);
+    }
+  }
+
+  for (const [colecao, docs] of [["produtos", plano.produtos], ["estabelecimentos", plano.estabelecimentos], ["precos", plano.precos], ["resumo", plano.resumo]]) {
+    const ids = new Set();
+    for (const doc of docs) {
+      if (!doc.id) problemas.push(`Documento sem id em ${colecao}.`);
+      else if (ids.has(doc.id)) problemas.push(`ID repetido em ${colecao}: ${doc.id}.`);
+      ids.add(doc.id);
+    }
+  }
+
+  for (const p of plano.produtos) if (!catalogo.has(p.id)) problemas.push(`Produto fora do catálogo: ${p.id}.`);
+  for (const r of plano.resumo) {
+    if (!idsProdutos.has(r.id)) problemas.push(`Resumo sem produto correspondente: ${r.id}.`);
+    if (!Array.isArray(r.ofertas) || !r.ofertas.length) problemas.push(`Resumo sem ofertas: ${r.id}.`);
+    if (tamanhoBytes(r) > MAX_BYTES_DOC) problemas.push(`Resumo grande demais para o Firestore: ${r.id}.`);
+  }
+  if (plano.resumo.length !== plano.produtos.length) problemas.push("Quantidade de resumos diferente da quantidade de produtos.");
+
+  let precosInvalidos = 0;
+  for (const preco of plano.precos) {
+    if (!Number.isFinite(preco.preco) || preco.preco <= 0) precosInvalidos++;
+    else if (!idsProdutos.has(preco.produtoId) || !idsEstab.has(preco.estabelecimentoId)) precosInvalidos++;
+  }
+  if (precosInvalidos) problemas.push(`${precosInvalidos} preço(s) inválido(s) ou apontando para produto/estabelecimento inexistente.`);
+
+  if (problemas.length) {
+    throw new Error(`A nova base não passou na validação:\n - ${problemas.slice(0, 15).join("\n - ")}${problemas.length > 15 ? `\n - ... e mais ${problemas.length - 15}` : ""}`);
+  }
+}
+
 function imprimirPlano(plano, executar) {
+  const confirmados = plano.precos.filter((p) => p.unidadeConfirmada).length;
   console.log("\n==============================================");
   console.log("PREÇO AÍ — SINCRONIZAÇÃO COM FIRESTORE");
   console.log("==============================================");
@@ -217,20 +358,26 @@ function imprimirPlano(plano, executar) {
   console.log("Projeto esperado:", PROJETO_ESPERADO);
   console.log("Produtos:", plano.produtos.length);
   console.log("Estabelecimentos:", plano.estabelecimentos.length);
-  console.log("Preços:", plano.precos.length, `(${plano.precos.filter((p) => p.unidadeConfirmada).length} com preço por kg/litro confirmado)`);
+  console.log("Preços:", plano.precos.length,
+    `(${confirmados} com preço por kg/litro confirmado, ${plano.precos.length - confirmados} só com preço de embalagem)`);
   console.log("Resumos por produto:", plano.resumo.length, "| descartados:", plano.descartes);
+  if (plano.semOfertas.length) console.log("Produtos SEM preço válido (não serão publicados):", plano.semOfertas.join(", "));
+
   const r = plano.resumo[0];
-  if (r?.ofertas?.length) console.log("Menor oferta de", r.nome + ":", r.ofertas[0].mercado, "-", r.ofertas[0].bairro, "-", r.ofertas[0].nomeEncontrado, "→ R$", r.ofertas[0].precoReferencia, "/" + r.unidadeComparacao);
+  if (r) {
+    const o = r.ofertas[0];
+    if (r.menorPrecoReferencia !== undefined) {
+      console.log(`Menor preço de ${r.nome}: R$ ${r.menorPrecoReferencia}/${r.unidadeComparacao} (${o.mercado}${o.bairro ? " - " + o.bairro : ""})`);
+    } else {
+      console.log(`Menor preço de ${r.nome} (embalagem, sem kg/litro): R$ ${r.menorPrecoEmbalagem}`);
+    }
+  }
   console.log("Estabelecimentos com coordenadas:", plano.estabelecimentos.filter((e) => e.latitude !== null && e.longitude !== null).length);
 
-  console.log("\nExemplo de produto:", plano.produtos[0] || "Nenhum");
-  console.log("Exemplo de estabelecimento:", plano.estabelecimentos[0] || "Nenhum");
-  console.log("Exemplo de preço:", plano.precos[0] || "Nenhum");
-
-  if (!executar) {
-    console.log("\nSIMULAÇÃO CONCLUÍDA. Para gravar, execute novamente com --executar.");
-  }
+  if (!executar) console.log("\nSIMULAÇÃO CONCLUÍDA. Para gravar, execute novamente com --executar.");
 }
+
+// ---------------------------------------------------------------- Firestore
 
 function paraFirestore(valor, Timestamp) {
   if (valor instanceof Date) return Timestamp.fromDate(valor);
@@ -241,21 +388,28 @@ function paraFirestore(valor, Timestamp) {
   return valor;
 }
 
-async function gravarFirestore(plano) {
+export async function conectarFirestore() {
   const credencial = lerCredencial();
-
   const { initializeApp, cert, getApps } = await import("firebase-admin/app");
   const { getFirestore, Timestamp } = await import("firebase-admin/firestore");
-
   const app = getApps().length
     ? getApps()[0]
     : initializeApp({ credential: cert(credencial), projectId: PROJETO_ESPERADO });
-  const db = getFirestore(app);
+  return { db: getFirestore(app), Timestamp, encerrar: () => app.delete() };
+}
 
+function amostra(lista, quantidade) {
+  if (lista.length <= quantidade) return lista;
+  const passo = lista.length / quantidade;
+  return Array.from({ length: quantidade }, (_, i) => lista[Math.floor(i * passo)]);
+}
+
+export async function gravarFirestore(plano, { db, Timestamp }) {
+  // "resumo" por último: é o que o app lê, então só passa a apontar para dados novos depois que os preços já existem.
   const grupos = [
-    ["produtos", plano.produtos],
-    ["estabelecimentos", plano.estabelecimentos],
     ["precos", plano.precos],
+    ["estabelecimentos", plano.estabelecimentos],
+    ["produtos", plano.produtos],
     ["resumo", plano.resumo]
   ];
 
@@ -264,46 +418,60 @@ async function gravarFirestore(plano) {
     for (let inicio = 0; inicio < documentos.length; inicio += TAMANHO_LOTE) {
       const lote = db.batch();
       const parte = documentos.slice(inicio, inicio + TAMANHO_LOTE);
-
       for (const documento of parte) {
         const { id, ...dados } = documento;
-        const dadosFirestore = paraFirestore(dados, Timestamp);
-
-        // "resumo" é recriado por inteiro a cada coleta; as demais coleções usam merge.
-        if (nomeColecao === "resumo") lote.set(db.collection(nomeColecao).doc(id), dadosFirestore);
-        else lote.set(db.collection(nomeColecao).doc(id), dadosFirestore, { merge: true });
+        // Sem merge: cada documento publicado substitui o anterior por inteiro, sem sobrar campo antigo.
+        lote.set(db.collection(nomeColecao).doc(id), paraFirestore(dados, Timestamp));
       }
-
       await lote.commit();
       totalGravado += parte.length;
       console.log(`Gravados ${parte.length} documento(s) em ${nomeColecao}.`);
     }
   }
 
-  console.log(`\nSINCRONIZAÇÃO CONCLUÍDA: ${totalGravado} gravações/upserts.`);
-  console.log("Nenhum documento existente foi apagado.");
-  await app.delete();
+  // Conferência: produtos e resumos inteiros; amostra de preços e estabelecimentos (para poupar leituras).
+  const conferir = [
+    ["produtos", plano.produtos], ["resumo", plano.resumo],
+    ["precos", amostra(plano.precos, AMOSTRA_PRECOS)],
+    ["estabelecimentos", amostra(plano.estabelecimentos, AMOSTRA_ESTABELECIMENTOS)]
+  ];
+  const ausentes = [];
+  for (const [nomeColecao, docs] of conferir) {
+    for (let i = 0; i < docs.length; i += 300) {
+      const refs = docs.slice(i, i + 300).map((d) => db.collection(nomeColecao).doc(d.id));
+      const snaps = await db.getAll(...refs, { fieldMask: ["fonte"] });
+      snaps.forEach((s) => { if (!s.exists) ausentes.push(`${nomeColecao}/${s.id}`); });
+    }
+  }
+  if (ausentes.length) {
+    throw new Error(`Conferência falhou: ${ausentes.length} documento(s) não foram encontrados após a gravação (ex.: ${ausentes.slice(0, 3).join(", ")}). Nada foi apagado.`);
+  }
+
+  console.log(`\nSINCRONIZAÇÃO CONCLUÍDA: ${totalGravado} documento(s) gravados e conferidos.`);
+  console.log("Nenhum documento existente foi apagado. A remoção de registros antigos é feita à parte, com limpar-antigos.js.");
+}
+
+// ---------------------------------------------------------------- execução
+
+export function montarPlanoLocal({ produto = null, dias = 7, limite = 0 } = {}) {
+  const catalogo = carregarCatalogo();
+  const plano = montarPlano(carregarColetas(produto), catalogo, limite, dias);
+  validarPlano(plano, catalogo, { parcial: Boolean(produto) || limite > 0 });
+  return { plano, catalogo };
 }
 
 async function main() {
-  const args = argumentos();
-  const filtroProduto = args.produto ? String(args.produto).trim() : null;
-  const limite = args.limite ? Math.max(0, Number(args.limite)) : 0;
-  const executar = args.executar === true;
+  const args = lerArgumentos();
+  const { plano } = montarPlanoLocal(args);
+  imprimirPlano(plano, args.executar);
+  if (!args.executar) return;
 
-  if (!fs.existsSync(CATALOGO_PATH)) {
-    throw new Error(`Catálogo não encontrado: ${CATALOGO_PATH}`);
+  const conexao = await conectarFirestore();
+  try {
+    await gravarFirestore(plano, conexao);
+  } finally {
+    await conexao.encerrar();
   }
-
-  const coletas = carregarColetas(filtroProduto);
-  const plano = montarPlano(coletas, carregarCatalogo(), limite, args.dias ? Number(args.dias) : 7);
-
-  if (!plano.precos.length) {
-    throw new Error("Nenhum preço válido encontrado para sincronizar.");
-  }
-
-  imprimirPlano(plano, executar);
-  if (executar) await gravarFirestore(plano);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
@@ -312,5 +480,3 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     process.exitCode = 1;
   });
 }
-
-export { montarPlano, carregarColetas, carregarCatalogo };

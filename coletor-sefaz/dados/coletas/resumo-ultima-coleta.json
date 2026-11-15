@@ -1,0 +1,225 @@
+{
+  "fonte": "Busca Preço SEFAZ-AM",
+  "iniciadoEm": "2026-11-10T23:58:58.375Z",
+  "configuracao": {
+    "maxPaginas": 5,
+    "pausaMs": 2000
+  },
+  "totalProdutosSolicitados": 30,
+  "produtosProcessados": [
+    {
+      "produtoId": "feijao-carioca",
+      "nomeExibicao": "Feijão carioca",
+      "quantidade": 56,
+      "falhas": 0
+    },
+    {
+      "produtoId": "feijao-preto",
+      "nomeExibicao": "Feijão preto",
+      "quantidade": 57,
+      "falhas": 0
+    },
+    {
+      "produtoId": "feijao-fradinho",
+      "nomeExibicao": "Feijão fradinho",
+      "quantidade": 44,
+      "falhas": 0
+    },
+    {
+      "produtoId": "arroz",
+      "nomeExibicao": "Arroz",
+      "quantidade": 152,
+      "falhas": 0
+    },
+    {
+      "produtoId": "milho",
+      "nomeExibicao": "Milho",
+      "quantidade": 72,
+      "falhas": 0
+    },
+    {
+      "produtoId": "aveia",
+      "nomeExibicao": "Aveia",
+      "quantidade": 114,
+      "falhas": 0
+    },
+    {
+      "produtoId": "macaxeira",
+      "nomeExibicao": "Macaxeira",
+      "quantidade": 101,
+      "falhas": 0
+    },
+    {
+      "produtoId": "batata",
+      "nomeExibicao": "Batata",
+      "quantidade": 5,
+      "falhas": 0
+    },
+    {
+      "produtoId": "inhame",
+      "nomeExibicao": "Inhame",
+      "quantidade": 9,
+      "falhas": 0
+    },
+    {
+      "produtoId": "tomate",
+      "nomeExibicao": "Tomate",
+      "quantidade": 39,
+      "falhas": 0
+    },
+    {
+      "produtoId": "cenoura",
+      "nomeExibicao": "Cenoura",
+      "quantidade": 18,
+      "falhas": 0
+    },
+    {
+      "produtoId": "alface",
+      "nomeExibicao": "Alface",
+      "quantidade": 43,
+      "falhas": 0
+    },
+    {
+      "produtoId": "banana",
+      "nomeExibicao": "Banana",
+      "quantidade": 133,
+      "falhas": 0
+    },
+    {
+      "produtoId": "maca",
+      "nomeExibicao": "Maçã",
+      "quantidade": 41,
+      "falhas": 0
+    },
+    {
+      "produtoId": "laranja",
+      "nomeExibicao": "Laranja",
+      "quantidade": 56,
+      "falhas": 0
+    },
+    {
+      "produtoId": "castanha-brasil",
+      "nomeExibicao": "Castanha-do-brasil",
+      "quantidade": 60,
+      "falhas": 0
+    },
+    {
+      "produtoId": "amendoim",
+      "nomeExibicao": "Amendoim",
+      "quantidade": 29,
+      "falhas": 0
+    },
+    {
+      "produtoId": "frango",
+      "nomeExibicao": "Frango",
+      "quantidade": 158,
+      "falhas": 0
+    },
+    {
+      "produtoId": "carne-bovina",
+      "nomeExibicao": "Carne bovina",
+      "quantidade": 151,
+      "falhas": 0
+    },
+    {
+      "produtoId": "ovos",
+      "nomeExibicao": "Ovos",
+      "quantidade": 25,
+      "falhas": 0
+    },
+    {
+      "produtoId": "leite",
+      "nomeExibicao": "Leite",
+      "quantidade": 108,
+      "falhas": 0
+    },
+    {
+      "produtoId": "queijo",
+      "nomeExibicao": "Queijo",
+      "quantidade": 164,
+      "falhas": 0
+    },
+    {
+      "produtoId": "iogurte",
+      "nomeExibicao": "Iogurte",
+      "quantidade": 53,
+      "falhas": 0
+    },
+    {
+      "produtoId": "acucar",
+      "nomeExibicao": "Açúcar",
+      "quantidade": 114,
+      "falhas": 0
+    },
+    {
+      "produtoId": "sal",
+      "nomeExibicao": "Sal",
+      "quantidade": 79,
+      "falhas": 0
+    },
+    {
+      "produtoId": "oleo",
+      "nomeExibicao": "Óleo",
+      "quantidade": 67,
+      "falhas": 0
+    },
+    {
+      "produtoId": "cafe",
+      "nomeExibicao": "Café",
+      "quantidade": 26,
+      "falhas": 0
+    },
+    {
+      "produtoId": "cha",
+      "nomeExibicao": "Chá",
+      "quantidade": 82,
+      "falhas": 0
+    },
+    {
+      "produtoId": "temperos",
+      "nomeExibicao": "Temperos",
+      "quantidade": 168,
+      "falhas": 0
+    },
+    {
+      "produtoId": "leite-po-integral",
+      "nomeExibicao": "Leite em pó integral",
+      "quantidade": 61,
+      "falhas": 0
+    }
+  ],
+  "concluidoEm": "2026-11-11T00:20:20.974Z",
+  "totalResultados": 2285,
+  "arquivosPorProduto": [
+    "dados/coletas/feijao-carioca.json",
+    "dados/coletas/feijao-preto.json",
+    "dados/coletas/feijao-fradinho.json",
+    "dados/coletas/arroz.json",
+    "dados/coletas/milho.json",
+    "dados/coletas/aveia.json",
+    "dados/coletas/macaxeira.json",
+    "dados/coletas/batata.json",
+    "dados/coletas/inhame.json",
+    "dados/coletas/tomate.json",
+    "dados/coletas/cenoura.json",
+    "dados/coletas/alface.json",
+    "dados/coletas/banana.json",
+    "dados/coletas/maca.json",
+    "dados/coletas/laranja.json",
+    "dados/coletas/castanha-brasil.json",
+    "dados/coletas/amendoim.json",
+    "dados/coletas/frango.json",
+    "dados/coletas/carne-bovina.json",
+    "dados/coletas/ovos.json",
+    "dados/coletas/leite.json",
+    "dados/coletas/queijo.json",
+    "dados/coletas/iogurte.json",
+    "dados/coletas/acucar.json",
+    "dados/coletas/sal.json",
+    "dados/coletas/oleo.json",
+    "dados/coletas/cafe.json",
+    "dados/coletas/cha.json",
+    "dados/coletas/temperos.json",
+    "dados/coletas/leite-po-integral.json"
+  ]
+}

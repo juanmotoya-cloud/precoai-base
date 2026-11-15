@@ -1,0 +1,145 @@
+{
+  "produtoId": "batata",
+  "nomeExibicao": "Batata",
+  "categoriaId": "raizes-tuberculos",
+  "unidadeReferencia": "kg",
+  "consultadoEm": "2026-11-11T00:09:00.376Z",
+  "quantidade": 5,
+  "consultas": [
+    {
+      "termo": "batata inglesa",
+      "paginasConsultadas": 3,
+      "paginasDisponiveis": 3,
+      "cardsAnalisados": 14,
+      "resultadosAceitos": 1,
+      "rejeitados": {
+        "descricao_vazia": 0,
+        "termo_excluido": 0,
+        "nao_corresponde": 13,
+        "preco_invalido": 0,
+        "preco_suspeito": 0
+      }
+    },
+    {
+      "termo": "batata lavada",
+      "paginasConsultadas": 1,
+      "paginasDisponiveis": 1,
+      "cardsAnalisados": 11,
+      "resultadosAceitos": 4,
+      "rejeitados": {
+        "descricao_vazia": 0,
+        "termo_excluido": 0,
+        "nao_corresponde": 7,
+        "preco_invalido": 0,
+        "preco_suspeito": 0
+      }
+    },
+    {
+      "termo": "batata branca",
+      "paginasConsultadas": 4,
+      "paginasDisponiveis": 4,
+      "cardsAnalisados": 28,
+      "resultadosAceitos": 0,
+      "rejeitados": {
+        "descricao_vazia": 0,
+        "termo_excluido": 15,
+        "nao_corresponde": 13,
+        "preco_invalido": 0,
+        "preco_suspeito": 0
+      }
+    }
+  ],
+  "falhas": [],
+  "resultados": [
+    {
+      "produtoId": "batata",
+      "produtoCatalogo": "Batata",
+      "nomeEncontrado": "BATATA LAVADA",
+      "preco": 7.99,
+      "precoOriginal": "R$ 7,99",
+      "unidadeReferencia": "kg",
+      "unidadeConfirmada": false,
+      "tempoDesdeEmissao": "Há 11 minuto(s) 47 segundo(s)",
+      "estabelecimento": "ATACADAO S.A",
+      "endereco": "LEOPOLDO PERES, NRO 646, EDUCANDOS, MANAUS-AM, CEP 69070-250",
+      "latitude": -3.14207334799994,
+      "longitude": -60.00760839999998,
+      "pagina": 1,
+      "termoCorrespondencia": "termo_pesquisa",
+      "consultadoEm": "2026-11-11T00:08:49.152Z",
+      "fonte": "Busca Preço SEFAZ-AM"
+    },
+    {
+      "produtoId": "batata",
+      "produtoCatalogo": "Batata",
+      "nomeEncontrado": "BATATA PORT LAVADA KG - V",
+      "preco": 8.99,
+      "precoOriginal": "R$ 8,99",
+      "unidadeReferencia": "kg",
+      "unidadeConfirmada": false,
+      "tempoDesdeEmissao": "Há 10 hora(s) 28 minuto(s) 37 segundo(s)",
+      "estabelecimento": "SUPERATACADO NOVA ERA - COMPENSA",
+      "endereco": "BRASIL, NRO 2610, SANTO ANTONIO, MANAUS-AM, CEP 69029-040",
+      "latitude": -3.111054989999957,
+      "longitude": -60.050284096999974,
+      "pagina": 1,
+      "termoCorrespondencia": "criterios_inclusao",
+      "consultadoEm": "2026-11-11T00:08:49.153Z",
+      "fonte": "Busca Preço SEFAZ-AM"
+    },
+    {
+      "produtoId": "batata",
+      "produtoCatalogo": "Batata",
+      "nomeEncontrado": "BATATA INGLESA KG",
+      "preco": 9,
+      "precoOriginal": "R$ 9,00",
+      "unidadeReferencia": "kg",
+      "unidadeConfirmada": false,
+      "tempoDesdeEmissao": "Há 8 hora(s) 40 minuto(s) 38 segundo(s)",
+      "estabelecimento": "MERCADINHO SAO JORGE",
+      "endereco": "CHUVA BRANCA, NRO 48, COROADO, MANAUS-AM, CEP 69082-500",
+      "latitude": -3.077458457999967,
+      "longitude": -59.970349296999984,
+      "pagina": 2,
+      "termoCorrespondencia": "termo_pesquisa",
+      "consultadoEm": "2026-11-11T00:08:45.960Z",
+      "fonte": "Busca Preço SEFAZ-AM"
+    },
+    {
+      "produtoId": "batata",
+      "produtoCatalogo": "Batata",
+      "nomeEncontrado": "BATATA LAVADA KG",
+      "preco": 9.99,
+      "precoOriginal": "R$ 9,99",
+      "unidadeReferencia": "kg",
+      "unidadeConfirmada": false,
+      "tempoDesdeEmissao": "Há 1 dia(s) 1 hora(s) 52 minuto(s) 18 segundo(s)",
+      "estabelecimento": "MEDEIROS COMERCIO DE ALIMENTOS LTDA - ME",
+      "endereco": "TORQUATO TAPAJOS, NRO 5200, FLORES, G, MANAUS-AM, CEP 69058-830",
+      "latitude": -3.071387246999962,
+      "longitude": -59.94889787799997,
+      "pagina": 1,
+      "termoCorrespondencia": "termo_pesquisa",
+      "consultadoEm": "2026-11-11T00:08:49.153Z",
+      "fonte": "Busca Preço SEFAZ-AM"
+    },
+    {
+      "produtoId": "batata",
+      "produtoCatalogo": "Batata",
+      "nomeEncontrado": "BATATA LAVADA",
+      "preco": 12.9,
+      "precoOriginal": "R$ 12,90",
+      "unidadeReferencia": "kg",
+      "unidadeConfirmada": false,
+      "tempoDesdeEmissao": "Há 1 hora(s) 47 minuto(s) 23 segundo(s)",
+      "estabelecimento": "FRIGORIFICO AMAZONAS",
+      "endereco": "VASCO VASQUES, NRO 1336, PARQUE 10 DE NOVEMBRO, LT PQ SHANGRI-LA 4, MANAUS-AM, CEP 69054-737",
+      "latitude": -3.067138485999976,
+      "longitude": -60.00320540499996,
+      "pagina": 1,
+      "termoCorrespondencia": "termo_pesquisa",
+      "consultadoEm": "2026-11-11T00:08:49.154Z",
+      "fonte": "Busca Preço SEFAZ-AM"
+    }
+  ]
+}

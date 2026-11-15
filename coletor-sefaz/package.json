@@ -13,6 +13,7 @@
     "coletar:teste-real": "node index.js --produto=arroz --max-paginas=1 --max-termos=1 --pausa-ms=2000",
     "sincronizar": "node sincronizar-firestore.js --executar",
     "limpar:antigos": "node limpar-antigos.js --executar",
+    "limpar:idade": "node limpar-antigos.js --modo=idade --dias=30",
     "sincronizar:simular": "node sincronizar-firestore.js",
     "limpar:simular": "node limpar-antigos.js",
     "atualizar": "node index.js --max-paginas=10 --pausa-ms=2000 && node sincronizar-firestore.js --executar"

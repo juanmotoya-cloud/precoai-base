@@ -1,0 +1,703 @@
+{
+  "versao": 1,
+  "fonte": "Busca Preço SEFAZ-AM",
+  "descricao": "Regras iniciais de pesquisa e filtragem da Cesta rápida. Ajustar com amostras reais.",
+  "totalProdutos": 30,
+  "produtos": [
+    {
+      "id": "feijão-carioca",
+      "categoriaId": "feijoes",
+      "nomeExibicao": "Feijão carioca",
+      "termosPesquisa": [
+        "feijao carioca",
+        "feijao carioquinha"
+      ],
+      "criteriosInclusao": [
+        "feijao",
+        "carioca"
+      ],
+      "criteriosExclusao": [
+        "feijao preto",
+        "feijao fradinho",
+        "feijao verde",
+        "feijao tropeiro",
+        "sopa",
+        "racao"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "feijão-preto",
+      "categoriaId": "feijoes",
+      "nomeExibicao": "Feijão preto",
+      "termosPesquisa": [
+        "feijao preto"
+      ],
+      "criteriosInclusao": [
+        "feijao",
+        "preto"
+      ],
+      "criteriosExclusao": [
+        "feijao carioca",
+        "feijao fradinho",
+        "feijao verde",
+        "feijoada pronta",
+        "sopa",
+        "racao"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "feijão-fradinho",
+      "categoriaId": "feijoes",
+      "nomeExibicao": "Feijão fradinho",
+      "termosPesquisa": [
+        "feijao fradinho",
+        "feijao de corda"
+      ],
+      "criteriosInclusao": [
+        "feijao"
+      ],
+      "criteriosExclusao": [
+        "feijao preto",
+        "feijao carioca",
+        "feijao tropeiro",
+        "sopa",
+        "racao"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "arroz",
+      "categoriaId": "cereais",
+      "nomeExibicao": "Arroz",
+      "termosPesquisa": [
+        "arroz branco",
+        "arroz tipo 1",
+        "arroz tipo 2",
+        "arroz parboilizado",
+        "arroz agulhinha"
+      ],
+      "criteriosInclusao": [
+        "arroz"
+      ],
+      "criteriosExclusao": [
+        "arroz doce",
+        "arroz de brocolis",
+        "arroz de brócolis",
+        "arroz temperado pronto",
+        "refil",
+        "racao",
+        "ração",
+        "dog chow",
+        "alimento para caes",
+        "alimento para gatos",
+        "cachorro",
+        "gato",
+        "tempero para arroz",
+        "temp arroz",
+        "mingau",
+        "porcao de arroz",
+        "porcao",
+        "alim p caes",
+        "alim p gatos",
+        "alimento p caes",
+        "alimento p gatos",
+        "caes",
+        "gatos",
+        "dog show",
+        "refeicao pronta",
+        "arroz saborizado",
+        "arroz preparado"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Excluir preparações, temperos, porções e alimentos para animais; validar unidade antes de comparar."
+    },
+    {
+      "id": "milho",
+      "categoriaId": "cereais",
+      "nomeExibicao": "Milho",
+      "termosPesquisa": [
+        "milho verde",
+        "milho em conserva",
+        "milho espiga",
+        "milho graos"
+      ],
+      "criteriosInclusao": [
+        "milho"
+      ],
+      "criteriosExclusao": [
+        "pipoca pronta",
+        "fuba",
+        "ração",
+        "racao",
+        "alimento animal"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "aveia",
+      "categoriaId": "cereais",
+      "nomeExibicao": "Aveia",
+      "termosPesquisa": [
+        "aveia em flocos",
+        "aveia flocos finos",
+        "farelo de aveia"
+      ],
+      "criteriosInclusao": [
+        "aveia"
+      ],
+      "criteriosExclusao": [
+        "barra de cereal",
+        "biscoito de aveia",
+        "ração",
+        "racao"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "macaxeira",
+      "categoriaId": "raizes-tuberculos",
+      "nomeExibicao": "Macaxeira",
+      "termosPesquisa": [
+        "macaxeira",
+        "aipim",
+        "mandioca"
+      ],
+      "criteriosInclusao": [
+        "macaxeira",
+        "aipim",
+        "mandioca"
+      ],
+      "criteriosExclusao": [
+        "farinha de mandioca",
+        "goma de tapioca",
+        "tapioca pronta",
+        "chips",
+        "salgadinho"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "batata",
+      "categoriaId": "raizes-tuberculos",
+      "nomeExibicao": "Batata",
+      "termosPesquisa": [
+        "batata inglesa",
+        "batata lavada",
+        "batata branca"
+      ],
+      "criteriosInclusao": [
+        "batata"
+      ],
+      "criteriosExclusao": [
+        "batata frita congelada",
+        "chips",
+        "salgadinho",
+        "pure instantaneo",
+        "batata doce"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "inhame",
+      "categoriaId": "raizes-tuberculos",
+      "nomeExibicao": "Inhame",
+      "termosPesquisa": [
+        "inhame"
+      ],
+      "criteriosInclusao": [
+        "inhame"
+      ],
+      "criteriosExclusao": [
+        "farinha de inhame",
+        "chips",
+        "salgadinho"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "tomate",
+      "categoriaId": "legumes-verduras",
+      "nomeExibicao": "Tomate",
+      "termosPesquisa": [
+        "tomate",
+        "tomate salada"
+      ],
+      "criteriosInclusao": [
+        "tomate"
+      ],
+      "criteriosExclusao": [
+        "molho de tomate",
+        "extrato de tomate",
+        "polpa de tomate",
+        "ketchup",
+        "tomate seco"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "cenoura",
+      "categoriaId": "legumes-verduras",
+      "nomeExibicao": "Cenoura",
+      "termosPesquisa": [
+        "cenoura"
+      ],
+      "criteriosInclusao": [
+        "cenoura"
+      ],
+      "criteriosExclusao": [
+        "bolo de cenoura",
+        "suco de cenoura",
+        "papinha",
+        "ração",
+        "racao"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "alface",
+      "categoriaId": "legumes-verduras",
+      "nomeExibicao": "Alface",
+      "termosPesquisa": [
+        "alface",
+        "alface crespa",
+        "alface americana"
+      ],
+      "criteriosInclusao": [
+        "alface"
+      ],
+      "criteriosExclusao": [
+        "muda de alface",
+        "semente de alface",
+        "salada pronta"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "banana",
+      "categoriaId": "frutas",
+      "nomeExibicao": "Banana",
+      "termosPesquisa": [
+        "banana prata",
+        "banana pacovan",
+        "banana nanica",
+        "banana"
+      ],
+      "criteriosInclusao": [
+        "banana"
+      ],
+      "criteriosExclusao": [
+        "banana passa",
+        "banana chips",
+        "vitamina",
+        "doce de banana",
+        "bala de banana"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "maca",
+      "categoriaId": "frutas",
+      "nomeExibicao": "Maçã",
+      "termosPesquisa": [
+        "maca gala",
+        "maca fuji",
+        "maca nacional",
+        "maca argentina"
+      ],
+      "criteriosInclusao": [
+        "maca",
+        "maça"
+      ],
+      "criteriosExclusao": [
+        "suco de maca",
+        "vinagre de maca",
+        "doce de maca",
+        "maca do amor",
+        "ração",
+        "racao"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "laranja",
+      "categoriaId": "frutas",
+      "nomeExibicao": "Laranja",
+      "termosPesquisa": [
+        "laranja pera",
+        "laranja lima",
+        "laranja"
+      ],
+      "criteriosInclusao": [
+        "laranja"
+      ],
+      "criteriosExclusao": [
+        "suco de laranja",
+        "refresco",
+        "nectar",
+        "oleo essencial"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "castanha-brasil",
+      "categoriaId": "castanhas-nozes",
+      "nomeExibicao": "Castanha-do-brasil",
+      "termosPesquisa": [
+        "castanha do brasil",
+        "castanha do para",
+        "castanha amazonica"
+      ],
+      "criteriosInclusao": [
+        "castanha"
+      ],
+      "criteriosExclusao": [
+        "castanha de caju",
+        "farinha de castanha",
+        "barra de cereal",
+        "ração",
+        "racao"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "amendoim",
+      "categoriaId": "castanhas-nozes",
+      "nomeExibicao": "Amendoim",
+      "termosPesquisa": [
+        "amendoim torrado",
+        "amendoim cru",
+        "amendoim sem pele"
+      ],
+      "criteriosInclusao": [
+        "amendoim"
+      ],
+      "criteriosExclusao": [
+        "pacoca",
+        "pe de moleque",
+        "doce de amendoim",
+        "oleo de amendoim"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "frango",
+      "categoriaId": "carnes-ovos",
+      "nomeExibicao": "Frango",
+      "termosPesquisa": [
+        "frango inteiro",
+        "peito de frango",
+        "coxa de frango",
+        "sobrecoxa de frango",
+        "asa de frango",
+        "frango resfriado"
+      ],
+      "criteriosInclusao": [
+        "frango"
+      ],
+      "criteriosExclusao": [
+        "ração",
+        "racao",
+        "alimento para animais",
+        "empanado",
+        "nuggets",
+        "salsicha",
+        "linguica",
+        "mortadela"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "carne-bovina",
+      "categoriaId": "carnes-ovos",
+      "nomeExibicao": "Carne bovina",
+      "termosPesquisa": [
+        "carne bovina",
+        "carne de boi",
+        "acem",
+        "patinho",
+        "coxao mole",
+        "alcatra"
+      ],
+      "criteriosInclusao": [
+        "carne",
+        "boi",
+        "bovina",
+        "acem",
+        "patinho",
+        "alcatra"
+      ],
+      "criteriosExclusao": [
+        "carne suina",
+        "carne de porco",
+        "linguica",
+        "salsicha",
+        "hamburguer",
+        "ração",
+        "racao"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "ovos",
+      "categoriaId": "carnes-ovos",
+      "nomeExibicao": "Ovos",
+      "termosPesquisa": [
+        "ovo branco",
+        "ovo vermelho",
+        "ovos de galinha",
+        "duzia de ovos"
+      ],
+      "criteriosInclusao": [
+        "ovo",
+        "ovos"
+      ],
+      "criteriosExclusao": [
+        "ovo de pascoa",
+        "ovo chocolate",
+        "ovomaltine",
+        "massa com ovos"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "leite",
+      "categoriaId": "leites-queijos",
+      "nomeExibicao": "Leite",
+      "termosPesquisa": [
+        "leite integral",
+        "leite longa vida",
+        "leite uht",
+        "leite pasteurizado"
+      ],
+      "criteriosInclusao": [
+        "leite"
+      ],
+      "criteriosExclusao": [
+        "leite em po",
+        "leite condensado",
+        "leite fermentado",
+        "bebida lactea",
+        "composto lacteo",
+        "formula infantil"
+      ],
+      "unidadeReferencia": "embalagem/unidade",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "queijo",
+      "categoriaId": "leites-queijos",
+      "nomeExibicao": "Queijo",
+      "termosPesquisa": [
+        "queijo mussarela",
+        "queijo muçarela",
+        "queijo prato",
+        "queijo coalho",
+        "queijo minas"
+      ],
+      "criteriosInclusao": [
+        "queijo"
+      ],
+      "criteriosExclusao": [
+        "pao de queijo",
+        "salgadinho sabor queijo",
+        "biscoito de queijo",
+        "molho sabor queijo"
+      ],
+      "unidadeReferencia": "embalagem/unidade",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "iogurte",
+      "categoriaId": "leites-queijos",
+      "nomeExibicao": "Iogurte",
+      "termosPesquisa": [
+        "iogurte natural",
+        "iogurte integral",
+        "iogurte com polpa"
+      ],
+      "criteriosInclusao": [
+        "iogurte"
+      ],
+      "criteriosExclusao": [
+        "bebida lactea",
+        "sobremesa lactea",
+        "leite fermentado"
+      ],
+      "unidadeReferencia": "embalagem/unidade",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "acucar",
+      "categoriaId": "acucares-sal-gorduras",
+      "nomeExibicao": "Açúcar",
+      "termosPesquisa": [
+        "acucar refinado",
+        "acucar cristal",
+        "acucar demerara"
+      ],
+      "criteriosInclusao": [
+        "acucar"
+      ],
+      "criteriosExclusao": [
+        "acucar mascavo",
+        "adocante",
+        "bala",
+        "refrigerante"
+      ],
+      "unidadeReferencia": "embalagem/unidade",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "sal",
+      "categoriaId": "acucares-sal-gorduras",
+      "nomeExibicao": "Sal",
+      "termosPesquisa": [
+        "sal refinado",
+        "sal iodado",
+        "sal marinho"
+      ],
+      "criteriosInclusao": [
+        "sal"
+      ],
+      "criteriosExclusao": [
+        "sal de frutas",
+        "sal mineral animal",
+        "salgadinho"
+      ],
+      "unidadeReferencia": "embalagem/unidade",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "oleo",
+      "categoriaId": "acucares-sal-gorduras",
+      "nomeExibicao": "Óleo",
+      "termosPesquisa": [
+        "oleo de soja",
+        "oleo vegetal"
+      ],
+      "criteriosInclusao": [
+        "oleo"
+      ],
+      "criteriosExclusao": [
+        "oleo lubrificante",
+        "oleo motor",
+        "oleo essencial",
+        "azeite",
+        "margarina"
+      ],
+      "unidadeReferencia": "embalagem/unidade",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "cafe",
+      "categoriaId": "cafe-cha-especiarias",
+      "nomeExibicao": "Café",
+      "termosPesquisa": [
+        "cafe torrado e moido",
+        "cafe em po"
+      ],
+      "criteriosInclusao": [
+        "cafe"
+      ],
+      "criteriosExclusao": [
+        "cafeina",
+        "cafe com leite pronto",
+        "capsula vazia"
+      ],
+      "unidadeReferencia": "embalagem/unidade",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "cha",
+      "categoriaId": "cafe-cha-especiarias",
+      "nomeExibicao": "Chá",
+      "termosPesquisa": [
+        "cha mate",
+        "cha de camomila",
+        "cha natural"
+      ],
+      "criteriosInclusao": [
+        "cha"
+      ],
+      "criteriosExclusao": [
+        "cha para cabelo",
+        "shampoo",
+        "sabonete",
+        "aromatizador"
+      ],
+      "unidadeReferencia": "embalagem/unidade",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "temperos",
+      "categoriaId": "cafe-cha-especiarias",
+      "nomeExibicao": "Temperos",
+      "termosPesquisa": [
+        "tempero completo",
+        "colorau",
+        "cominho",
+        "pimenta do reino",
+        "oregano"
+      ],
+      "criteriosInclusao": [
+        "tempero",
+        "colorau",
+        "cominho",
+        "pimenta",
+        "oregano"
+      ],
+      "criteriosExclusao": [
+        "tempero pronto para carne",
+        "caldo de carne",
+        "ração",
+        "racao"
+      ],
+      "unidadeReferencia": "embalagem/unidade",
+      "observacao": "Conferir descrição e unidade antes de comparar preços."
+    },
+    {
+      "id": "leite-po-integral",
+      "categoriaId": "leites-queijos",
+      "nomeExibicao": "Leite em pó integral",
+      "termosPesquisa": [
+        "leite em po integral",
+        "leite integral em po",
+        "leite integral instantaneo"
+      ],
+      "criteriosInclusao": [
+        "leite",
+        "po"
+      ],
+      "criteriosExclusao": [
+        "composto lacteo",
+        "formula infantil",
+        "leite desnatado",
+        "leite semi desnatado",
+        "bebida lactea"
+      ],
+      "unidadeReferencia": "embalagem",
+      "observacao": "Aceitar marcas diferentes; excluir composto lácteo e fórmula infantil."
+    }
+  ]
+}

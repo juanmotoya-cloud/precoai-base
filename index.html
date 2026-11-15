@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PreçoAí — Início</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- HEADER: menu · LOGO · perfil -->
+    <header class="header">
+      <button class="btn-sq" id="menu-btn" aria-label="Abrir menu" aria-controls="drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18" />
+        </svg>
+      </button>
+      <div class="logo">
+        <img src="./img/logo.png" alt="PreçoAí">
+      </div>
+      <button class="btn-sq" id="perfil-btn" aria-label="Perfil"><i class="i" style="-webkit-mask-image:url(icons/sombra-de-usuario-masculino.png);mask-image:url(icons/sombra-de-usuario-masculino.png)" aria-hidden="true"></i></button>
+    </header>
+
+    <!-- LOCALIZAÇÃO -->
+    <button class="pill location" id="location-btn" type="button" aria-label="Ativar localização e buscar mercados em um raio de 3 quilômetros">
+      <i class="i" style="-webkit-mask-image:url(icons/navigation.png);mask-image:url(icons/navigation.png)" aria-hidden="true"></i>
+      <span id="location-label">Ativar localização · Buscar mercados em até <strong>3 km</strong></span>
+    </button>
+
+    <!-- BAIRRO -->
+    <label class="pill location bairro">
+      <i class="i" style="-webkit-mask-image:url(icons/map-pinned.png);mask-image:url(icons/map-pinned.png)" aria-hidden="true"></i>
+      <select id="bairro-select" aria-label="Escolher bairro">
+        <option value="">Todos os bairros de Manaus</option>
+      </select>
+    </label>
+
+    <!-- BANNER (carrossel) -->
+    <section class="banner" aria-label="Destaques">
+      <div class="track" id="track">
+        <div class="slide">
+          <div class="slide-text">
+            <h1>Preço em queda esta semana</h1>
+            <p>Veja os alimentos que ficaram mais baratos</p>
+            <a href="#" class="btn-amarelo">Ver preços</a>
+          </div>
+          <span class="slide-circle"><i class="i" style="-webkit-mask-image:url(icons/reducao-de-preco.png);mask-image:url(icons/reducao-de-preco.png)" aria-hidden="true"></i></span>
+        </div>
+        <div class="slide">
+          <div class="slide-text">
+            <h1>Ofertas no seu bairro</h1>
+            <p>Promoções dos mercados perto de você</p>
+            <a href="#" class="btn-amarelo">Ver ofertas</a>
+          </div>
+          <span class="slide-circle"><i class="i" style="-webkit-mask-image:url(icons/oferta-limitada.png);mask-image:url(icons/oferta-limitada.png)" aria-hidden="true"></i></span>
+        </div>
+        <div class="slide">
+          <div class="slide-text">
+            <h1>Monte sua lista de compras</h1>
+            <p>Compare o total em cada mercado</p>
+            <a href="#" class="btn-amarelo">Criar lista</a>
+          </div>
+          <span class="slide-circle"><i class="i" style="-webkit-mask-image:url(icons/lista-de-afazeres.png);mask-image:url(icons/lista-de-afazeres.png)" aria-hidden="true"></i></span>
+        </div>
+      </div>
+      <div class="dots" id="dots">
+        <button class="dot active" aria-label="Destaque 1"></button>
+        <button class="dot" aria-label="Destaque 2"></button>
+        <button class="dot" aria-label="Destaque 3"></button>
+      </div>
+    </section>
+
+    <!-- BUSCA -->
+    <label class="pill search">
+      <i class="i" style="-webkit-mask-image:url(icons/procurar.png);mask-image:url(icons/procurar.png)" aria-hidden="true"></i>
+      <input id="search" type="search" placeholder="Buscar alimento ou marca" />
+    </label>
+
+    <!-- RESULTADOS (busca e categorias) -->
+    <section class="section" id="resultados" hidden>
+      <div class="sh"><h2 id="resultados-titulo">Resultados</h2></div>
+      <div class="grid2" id="resultados-lista"></div>
+    </section>
+
+    <!-- CATEGORIAS -->
+    <section class="section">
+      <div class="sh">
+        <h2>Categorias</h2>
+        <a href="#categorias" class="ver-todas">Ver todas</a>
+      </div>
+
+      <div class="cats" id="categorias">
+  <button class="cat active" data-cat="todos"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/carrinho-de-supermercado.png);mask-image:url(icons/carrinho-de-supermercado.png)" aria-hidden="true"></i></span>Todos</button>
+  <button class="cat" data-cat="feijoes"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/cesta.png);mask-image:url(icons/cesta.png)" aria-hidden="true"></i></span>Feijões</button>
+  <button class="cat" data-cat="cereais"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/casal-de-biscoitos.png);mask-image:url(icons/casal-de-biscoitos.png)" aria-hidden="true"></i></span>Cereais</button>
+  <button class="cat" data-cat="raizes-tuberculos"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/cesta.png);mask-image:url(icons/cesta.png)" aria-hidden="true"></i></span>Raízes e tubérculos</button>
+  <button class="cat" data-cat="legumes-verduras"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/silhueta-negra-de-maca-com-uma-folha.png);mask-image:url(icons/silhueta-negra-de-maca-com-uma-folha.png)" aria-hidden="true"></i></span>Legumes e verduras</button>
+  <button class="cat" data-cat="frutas"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/silhueta-negra-de-maca-com-uma-folha.png);mask-image:url(icons/silhueta-negra-de-maca-com-uma-folha.png)" aria-hidden="true"></i></span>Frutas</button>
+  <button class="cat" data-cat="castanhas-nozes"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/casal-de-biscoitos.png);mask-image:url(icons/casal-de-biscoitos.png)" aria-hidden="true"></i></span>Castanhas e nozes</button>
+  <button class="cat" data-cat="carnes-ovos"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/carne.png);mask-image:url(icons/carne.png)" aria-hidden="true"></i></span>Carnes e ovos</button>
+  <button class="cat" data-cat="leites-queijos"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/leite.png);mask-image:url(icons/leite.png)" aria-hidden="true"></i></span>Leites e queijos</button>
+  <button class="cat" data-cat="acucares-sal-gorduras"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/casal-de-biscoitos.png);mask-image:url(icons/casal-de-biscoitos.png)" aria-hidden="true"></i></span>Açúcares, sal, óleos e gorduras</button>
+  <button class="cat" data-cat="cafe-cha-especiarias"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/drinque-suave.png);mask-image:url(icons/drinque-suave.png)" aria-hidden="true"></i></span>Café, chá e especiarias</button>
+      </div>
+    </section>
+
+    <!-- CESTA RÁPIDA -->
+    <section class="section">
+
+      <div class="sh">
+        <div>
+          <h2>Cesta rápida</h2>
+          <p class="sub">Itens essenciais com o menor preço</p>
+        </div>
+
+        <button class="btn-circle" aria-label="Ver cesta rápida">&gt;</button>
+      </div>
+
+      <!-- Produtos carregados pelo Firebase -->
+      <div class="grid2" id="cesta-produtos">
+        <p class="estado">Carregando menores preços...</p>
+      </div>
+
+    </section>
+
+
+    <!-- MAIS BUSCADOS -->
+    <section class="section">
+      <div class="sh">
+        <div>
+          <h2>Mais buscados</h2>
+          <p class="sub">Alimentos que mais pessoas pesquisam</p>
+        </div>
+        <button class="btn-circle" aria-label="Ver mais buscados">&gt;</button>
+      </div>
+      <div id="mais-buscados"></div>
+    </section>
+
+    <!-- NAVEGAÇÃO INFERIOR -->
+    <nav class="bottom-nav" aria-label="Principal">
+      <button class="nav-item active" data-nav="inicio"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/silhueta-de-icone-de-casa.png);mask-image:url(icons/silhueta-de-icone-de-casa.png)" aria-hidden="true"></i></span>Início</button>
+      <button class="nav-item" data-nav="buscar"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/procurar.png);mask-image:url(icons/procurar.png)" aria-hidden="true"></i></span>Buscar</button>
+      <button class="nav-item" data-nav="cesta"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/cesta.png);mask-image:url(icons/cesta.png)" aria-hidden="true"></i><b class="badge" id="badge"></b></span>Cesta</button>
+      <button class="nav-item" data-nav="favoritos"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/heart.png);mask-image:url(icons/heart.png)" aria-hidden="true"></i></span>Favoritos</button>
+      <button class="nav-item" data-nav="mapa"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/mapa.png);mask-image:url(icons/mapa.png)" aria-hidden="true"></i></span>Mapa</button>
+    </nav>
+
+    <!-- MENU LATERAL -->
+    <div class="overlay" id="overlay"></div>
+    <aside class="drawer" id="drawer" aria-label="Menu" inert>
+      <div class="drawer-head">
+        <span class="avatar"><i class="i" style="-webkit-mask-image:url(icons/sombra-de-usuario-masculino.png);mask-image:url(icons/sombra-de-usuario-masculino.png)" aria-hidden="true"></i></span>
+        <div class="drawer-user"><strong>Nome do usuário</strong><span>Ver perfil</span></div>
+        <button class="btn-sq" id="drawer-close" aria-label="Fechar menu">✕</button>
+      </div>
+      <nav class="drawer-nav">
+        <a href="index.html"><i class="i" style="-webkit-mask-image:url(icons/silhueta-de-icone-de-casa.png);mask-image:url(icons/silhueta-de-icone-de-casa.png)" aria-hidden="true"></i>Início</a>
+        <a href="#categorias" data-go><i class="i" style="-webkit-mask-image:url(icons/lista-de-afazeres.png);mask-image:url(icons/lista-de-afazeres.png)" aria-hidden="true"></i>Categorias</a>
+        <a href="#" data-soon><i class="i" style="-webkit-mask-image:url(icons/cesta.png);mask-image:url(icons/cesta.png)" aria-hidden="true"></i>Cesta de compras</a>
+        <a href="#" data-soon><i class="i" style="-webkit-mask-image:url(icons/mapa.png);mask-image:url(icons/mapa.png)" aria-hidden="true"></i>Mapa de mercados</a>
+        <a href="#" data-soon><i class="i" style="-webkit-mask-image:url(icons/reducao-de-preco.png);mask-image:url(icons/reducao-de-preco.png)" aria-hidden="true"></i>Histórico de preços</a>
+        <a href="#" data-soon><i class="i" style="-webkit-mask-image:url(icons/heart.png);mask-image:url(icons/heart.png)" aria-hidden="true"></i>Favoritos</a>
+        <a href="#" data-soon><i class="i" style="-webkit-mask-image:url(icons/promocoes.png);mask-image:url(icons/promocoes.png)" aria-hidden="true"></i>Sobre o PreçoAí</a>
+        <hr />
+        <a href="#" data-soon><i class="i i-ajuda" aria-hidden="true"></i>Ajuda</a>
+        <a href="#" data-soon><i class="i i-config" aria-hidden="true"></i>Configurações</a>
+      </nav>
+      <div class="drawer-foot">
+        <button class="btn-out" data-soon><i class="i i-lua" aria-hidden="true"></i>Modo</button>
+        <button class="btn-out" data-soon>Entrar</button>
+      </div>
+      <div class="drawer-credit">
+        Feito por <strong>Motoya Studios</strong>
+        <span>Versão beta</span>
+      </div>
+    </aside>
+
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+  <script type="module" src="./js/app.js"></script>
+  <script src="js/script.js"></script>
+</body>
+
+</html>

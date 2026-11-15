@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PreçoAí — Produto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app app-produto">
+    <header class="header prod-head">
+      <a class="btn-sq" href="index.html" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+      <h1 id="titulo">Produto</h1>
+      <button class="btn-sq" id="fav" type="button" aria-pressed="false" aria-label="Favoritar"><i class="i" style="-webkit-mask-image:url(icons/heart.png);mask-image:url(icons/heart.png)"></i></button>
+    </header>
+
+    <div class="img hero" id="hero"></div>
+    <h2 class="prod-nome" id="nome"></h2>
+    <p class="sub" id="subtitulo"></p>
+
+    <section class="best" id="melhor" hidden></section>
+
+    <section class="section">
+      <div class="sh">
+        <div><h2>Comparação de preços</h2><p class="sub" id="comp-sub">Do menor para o maior · Manaus</p></div>
+        <button class="btn-filtro" id="filtro" type="button">Filtrar</button>
+      </div>
+      <div id="lista"><p class="estado">Carregando ofertas...</p></div>
+    </section>
+
+    <section class="section">
+      <div class="sh"><h2>Histórico de preços</h2><span class="sub">Últimos dias</span></div>
+      <div class="chart" id="chart"></div>
+    </section>
+
+    <div class="action-bar">
+      <button class="btn-vermelho" id="add" type="button">Adicionar à cesta</button>
+      <a class="btn-out" id="mapa" target="_blank" rel="noopener">Ver no mapa</a>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+  <script type="module" src="./js/produto.js"></script>
+</body>
+</html>

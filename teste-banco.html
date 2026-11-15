@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teste do banco — PreçoAí</title>
+  <style>body{font:14px/1.5 system-ui,sans-serif;padding:16px;max-width:760px;margin:auto}pre{white-space:pre-wrap;background:#F2F2F2;padding:12px;border-radius:8px}.ok{color:#0a7a2f}.erro{color:#F20D18;font-weight:700}</style>
+</head>
+<body>
+  <h1>Teste do banco</h1>
+  <p>Abra esta página pelo seu servidor (não clicando direto no arquivo) e me envie o texto abaixo.</p>
+  <pre id="saida">Iniciando...</pre>
+  <script type="module">
+    const saida = document.getElementById("saida");
+    const linha = (txt, cls) => { saida.insertAdjacentHTML("beforeend", `\n<span class="${cls || ""}">${String(txt).replace(/</g, "&lt;")}</span>`); };
+    saida.textContent = "";
+    linha("Página: " + location.href);
+    linha("Protocolo: " + location.protocol + (location.protocol === "file:" ? "  <-- módulos não funcionam em file://" : ""));
+
+    let db, collection, getDocs;
+    try {
+      ({ db, collection, getDocs } = await import("./js/firebase.js"));
+      linha("Firebase carregou: OK", "ok");
+    } catch (e) {
+      linha("FALHOU ao carregar o Firebase: " + e.name + " — " + e.message, "erro");
+      throw e;
+    }
+
+    for (const nome of ["produtos", "precos", "estabelecimentos"]) {
+      try {
+        const snap = await getDocs(collection(db, nome));
+        linha(`\n${nome}: ${snap.size} documento(s)`, snap.size ? "ok" : "erro");
+        if (snap.size) {
+          const d = snap.docs[0];
+          const campos = Object.entries(d.data()).map(([k, v]) => `${k} = ${JSON.stringify(v)} (${v?.toDate ? "Timestamp" : typeof v})`);
+          linha(`  1º documento (id ${d.id}):\n    ` + campos.join("\n    "));
+        }
+      } catch (e) {
+        linha(`\n${nome}: ERRO ${e.code || e.name} — ${e.message}`, "erro");
+      }
+    }
+    linha("\nFim do teste.");
+  </script>
+</body>
+</html>

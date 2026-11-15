@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // O app só lê. A escrita é feita pelo coletor com a chave de administrador (ignora estas regras).
+    match /resumo/{doc}           { allow read: if true; allow write: if false; }
+    match /produtos/{doc}         { allow read: if true; allow write: if false; }
+    match /precos/{doc}           { allow read: if true; allow write: if false; }
+    match /estabelecimentos/{doc} { allow read: if true; allow write: if false; }
+    match /{outros=**}            { allow read, write: if false; }
+  }
+}

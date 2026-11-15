@@ -1,0 +1,26 @@
+{
+  "name": "coletor-sefaz",
+  "version": "1.0.0",
+  "description": "Coletor genérico de preços do Busca Preço SEFAZ-AM para o PreçoAí",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "validar:catalogo": "node validar-catalogo.js",
+    "coletar": "node index.js",
+    "coletar:arroz": "node index.js --produto=arroz --max-paginas=2",
+    "coletar:teste": "node testar-amostra.js",
+    "testar:filtros": "node testar-filtros.js",
+    "coletar:teste-real": "node index.js --produto=arroz --max-paginas=1 --max-termos=1 --pausa-ms=2000",
+    "sincronizar": "node sincronizar-firestore.js --executar",
+    "limpar:antigos": "node limpar-antigos.js --executar",
+    "atualizar": "node index.js --max-paginas=10 --pausa-ms=2000 && node sincronizar-firestore.js --executar && node limpar-antigos.js --executar"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "firebase-admin": "^14.5.0"
+  }
+}

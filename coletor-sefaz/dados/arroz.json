@@ -1,0 +1,140 @@
+{
+  "fonte": "Busca Preço SEFAZ-AM",
+  "termoPesquisado": "arroz",
+  "consultadoEm": "2026-11-10T19:55:27.328Z",
+  "quantidade": 12,
+  "resultados": [
+    {
+      "nome": "ARROZ DE BROCOLIS",
+      "preco": 0.01,
+      "precoOriginal": "R$ 0,01",
+      "tempoDesdeEmissao": "Há 54 minuto(s) 39 segundo(s)",
+      "estabelecimento": "CAMARAO & CIA",
+      "endereco": "DJALMA BATISTA, NRO 482, PARQUE 10, 2Âº PISO LOJAS 221/222, MANAUS-AM, CEP 69050-010",
+      "latitude": -60.02143899699996,
+      "longitude": -3.094061802999931,
+      "alerta": "Preço suspeito: conferir"
+    },
+    {
+      "nome": "REFIL ARROZ",
+      "preco": 0.01,
+      "precoOriginal": "R$ 0,01",
+      "tempoDesdeEmissao": "Há 2 hora(s) 14 minuto(s) 29 segundo(s)",
+      "estabelecimento": "TAMBAGRILL V 8",
+      "endereco": "EPHIGENIO SALES, NRO 2600, ALEIXO, CJ MORADA DO SOL, MANAUS-AM, CEP 69060-020",
+      "latitude": -59.99557990399995,
+      "longitude": -3.089164015999927,
+      "alerta": "Preço suspeito: conferir"
+    },
+    {
+      "nome": "ARROZ BCO MANAUS 500G",
+      "preco": 1.99,
+      "precoOriginal": "R$ 1,99",
+      "tempoDesdeEmissao": "Há 2 hora(s) 27 minuto(s) 6 segundo(s)",
+      "estabelecimento": "SUPER NOVO ALEIXO",
+      "endereco": "RIO CARBORIS, NRO 35, NOVO ALEIXO, QUADRA B 23 LOTE NOVO ALEIXO, MANAUS-AM, CEP 69098-272",
+      "latitude": -59.95838683399995,
+      "longitude": -3.052366509999956,
+      "alerta": null
+    },
+    {
+      "nome": "ARROZ BRANCO 500G MA",
+      "preco": 2.35,
+      "precoOriginal": "R$ 2,35",
+      "tempoDesdeEmissao": "Há 1 dia(s) 3 hora(s) 17 minuto(s) 5 segundo(s)",
+      "estabelecimento": "MERCEARIA STEFANIE",
+      "endereco": "URUCUM, NRO 91, COROADO, IV MONTE SIAO, MANAUS-AM, CEP 69082-690",
+      "latitude": -59.96672447499998,
+      "longitude": -3.080023787999949,
+      "alerta": null
+    },
+    {
+      "nome": "DOG CHOW SACHE ADULTO CORDEIRO&ARROZ 85G",
+      "preco": 2.39,
+      "precoOriginal": "R$ 2,39",
+      "tempoDesdeEmissao": "Há 1 hora(s) 49 minuto(s) 32 segundo(s)",
+      "estabelecimento": "SHOP DA RACAO",
+      "endereco": "TANCREDO NEVES, NRO 1, PARQUE 10 DE NOVEMBRO, QUADRAQ1 PQ SHANGRILA 4 SALA 02, MANAUS-AM, CEP 69054-040",
+      "latitude": -60.005092411999954,
+      "longitude": -3.069315407999966,
+      "alerta": null
+    },
+    {
+      "nome": "TEMP ARROZ FRANGO20G",
+      "preco": 2.5,
+      "precoOriginal": "R$ 2,50",
+      "tempoDesdeEmissao": "Há 11 hora(s) 59 minuto(s) 24 segundo(s)",
+      "estabelecimento": "VERDURAO COMPRE BEM",
+      "endereco": "DUBLIM, NRO 76, PLANALTO, CJ RES FLAMANAL, MANAUS-AM, CEP 69045-080",
+      "latitude": -60.060387841999955,
+      "longitude": -3.064698067999927,
+      "alerta": null
+    },
+    {
+      "nome": "TEMPERO PARA ARROZ E FRANGO 20G - UN",
+      "preco": 2.75,
+      "precoOriginal": "R$ 2,75",
+      "tempoDesdeEmissao": "Há 21 hora(s) 7 minuto(s) 39 segundo(s)",
+      "estabelecimento": "CN SUPERMERCADO",
+      "endereco": "MARIA ANDRADE, NRO 739, SAO LAZARO, MANAUS-AM, CEP 69073-010",
+      "latitude": -59.99187436999995,
+      "longitude": -3.137893662999943,
+      "alerta": null
+    },
+    {
+      "nome": "ARROZ BRANCO COPACABANA TP3 1KG",
+      "preco": 2.99,
+      "precoOriginal": "R$ 2,99",
+      "tempoDesdeEmissao": "Há 1 hora(s) 24 minuto(s) 43 segundo(s)",
+      "estabelecimento": "SUPERMERCADO BARATEIRO",
+      "endereco": "OSCAR BOREL, NRO 30, COMPENSA, MANAUS-AM, CEP 69035-210",
+      "latitude": -60.054842134999944,
+      "longitude": -3.106717906999961,
+      "alerta": null
+    },
+    {
+      "nome": "RACAO DOG CHOW FILH CORD ARROZ 85G",
+      "preco": 2.99,
+      "precoOriginal": "R$ 2,99",
+      "tempoDesdeEmissao": "Há 1 hora(s) 48 minuto(s) 29 segundo(s)",
+      "estabelecimento": "SUPERMERCADOS DB LTDA",
+      "endereco": "JORNALISTA HUMBERTO CALDERARO FILHO, NRO 1128, ADRIANOPOLIS, MANAUS-AM, CEP 69057-021",
+      "latitude": -60.00891131999998,
+      "longitude": -3.097769907999975,
+      "alerta": null
+    },
+    {
+      "nome": "MINGAU ALCA FOODS 200G ARROZ",
+      "preco": 2.99,
+      "precoOriginal": "R$ 2,99",
+      "tempoDesdeEmissao": "Há 18 hora(s) 16 minuto(s) 30 segundo(s)",
+      "estabelecimento": "SUPERATACADO NOVA ERA",
+      "endereco": "TORQUATO TAPAJOS, NRO 2871, DA PAZ, LOJA A, MANAUS-AM, CEP 69048-010",
+      "latitude": -60.027192396999965,
+      "longitude": -3.052511257999925,
+      "alerta": null
+    },
+    {
+      "nome": "ALIM.P/CAES AD.DOG SHOW FGO/ARROZ - 1X85G",
+      "preco": 2.99,
+      "precoOriginal": "R$ 2,99",
+      "tempoDesdeEmissao": "Há 20 hora(s) 38 minuto(s) 41 segundo(s)",
+      "estabelecimento": "SUPERMERCADO BARATAO DA CARNE",
+      "endereco": "ADALBERTO VALE, NRO 649, BETANIA, MANAUS-AM, CEP 69073-040",
+      "latitude": -59.99493990199994,
+      "longitude": -3.133115700999952,
+      "alerta": null
+    },
+    {
+      "nome": "CF PORCAO DE ARROZ",
+      "preco": 2.99,
+      "precoOriginal": "R$ 2,99",
+      "tempoDesdeEmissao": "Há 1 dia(s) 2 hora(s) 11 minuto(s) 46 segundo(s)",
+      "estabelecimento": "MEDEIROS COMERCIO DE ALIMENTOS LTDA - ME",
+      "endereco": "TORQUATO TAPAJOS, NRO 5200, FLORES, G, MANAUS-AM, CEP 69058-830",
+      "latitude": -59.94889787799997,
+      "longitude": -3.071387246999962,
+      "alerta": null
+    }
+  ]
+}

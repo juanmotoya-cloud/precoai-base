@@ -40,6 +40,10 @@ function normalizar(texto = "") {
     .replace(/\s+/g, " ");
 }
 
+function idSemAcento(id = "") {
+  return String(id).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
 function escaparRegex(texto) {
   return texto.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -251,7 +255,8 @@ function carregarCatalogo() {
   if (!fs.existsSync(CATALOGO_PATH)) throw new Error(`Catálogo não encontrado: ${CATALOGO_PATH}`);
   const catalogo = JSON.parse(fs.readFileSync(CATALOGO_PATH, "utf8"));
   if (!Array.isArray(catalogo.produtos)) throw new Error("Formato inválido: catalogo.produtos precisa ser uma lista.");
-  return catalogo.produtos;
+  // Garante ids sem acento (ex.: "feijão-carioca" vira "feijao-carioca"), igual aos nomes dos arquivos de coleta.
+  return catalogo.produtos.map((p) => ({ ...p, id: idSemAcento(p.id) }));
 }
 
 async function coletarProduto(produto) {

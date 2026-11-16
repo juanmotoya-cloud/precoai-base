@@ -114,7 +114,8 @@ export function carregarColetas(filtroProduto) {
     if (!dados || !dados.produtoId || !Array.isArray(dados.resultados)) {
       throw new Error(`Formato inválido no arquivo ${arquivo}.`);
     }
-    if (dados.produtoId !== path.basename(arquivo, ".json")) {
+    dados.produtoId = idSemAcento(dados.produtoId);
+    if (dados.produtoId !== idSemAcento(path.basename(arquivo, ".json"))) {
       throw new Error(`O produtoId "${dados.produtoId}" não corresponde ao nome do arquivo ${arquivo}.`);
     }
     if (vistos.has(dados.produtoId)) throw new Error(`Produto repetido nas coletas: ${dados.produtoId}.`);
@@ -122,6 +123,9 @@ export function carregarColetas(filtroProduto) {
     return dados;
   });
 }
+
+// Ids sempre sem acento e em minúsculas ("feijão-carioca" -> "feijao-carioca").
+const idSemAcento = (id) => String(id ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 export function carregarCatalogo(caminho = CATALOGO_PATH) {
   if (!fs.existsSync(caminho)) throw new Error(`Catálogo não encontrado: ${caminho}`);
@@ -134,8 +138,9 @@ export function carregarCatalogo(caminho = CATALOGO_PATH) {
   const mapa = new Map();
   for (const p of catalogo.produtos) {
     if (!p || typeof p.id !== "string" || !p.id) throw new Error("Catálogo inválido: produto sem id.");
-    if (mapa.has(p.id)) throw new Error(`Catálogo inválido: id repetido (${p.id}).`);
-    mapa.set(p.id, p);
+    const id = idSemAcento(p.id);
+    if (mapa.has(id)) throw new Error(`Catálogo inválido: id repetido (${id}).`);
+    mapa.set(id, { ...p, id });
   }
   return mapa;
 }

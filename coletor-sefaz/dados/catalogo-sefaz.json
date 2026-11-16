@@ -5,7 +5,7 @@
   "totalProdutos": 30,
   "produtos": [
     {
-      "id": "feijão-carioca",
+      "id": "feijao-carioca",
       "categoriaId": "feijoes",
       "nomeExibicao": "Feijão carioca",
       "termosPesquisa": [
@@ -28,7 +28,7 @@
       "observacao": "Conferir descrição e unidade antes de comparar preços."
     },
     {
-      "id": "feijão-preto",
+      "id": "feijao-preto",
       "categoriaId": "feijoes",
       "nomeExibicao": "Feijão preto",
       "termosPesquisa": [
@@ -50,7 +50,7 @@
       "observacao": "Conferir descrição e unidade antes de comparar preços."
     },
     {
-      "id": "feijão-fradinho",
+      "id": "feijao-fradinho",
       "categoriaId": "feijoes",
       "nomeExibicao": "Feijão fradinho",
       "termosPesquisa": [

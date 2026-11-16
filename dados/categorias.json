@@ -1,0 +1,94 @@
+{
+  "categorias": [
+    {
+      "id": "feijoes",
+      "nome": "Feijões",
+      "produtos": [
+        "Feijão carioca",
+        "Feijão fradinho",
+        "Feijão preto"
+      ]
+    },
+    {
+      "id": "cereais",
+      "nome": "Cereais",
+      "produtos": [
+        "Arroz",
+        "Aveia",
+        "Milho"
+      ]
+    },
+    {
+      "id": "raizes-tuberculos",
+      "nome": "Raízes e tubérculos",
+      "produtos": [
+        "Batata",
+        "Inhame",
+        "Macaxeira"
+      ]
+    },
+    {
+      "id": "legumes-verduras",
+      "nome": "Legumes e verduras",
+      "produtos": [
+        "Alface",
+        "Cenoura",
+        "Tomate"
+      ]
+    },
+    {
+      "id": "frutas",
+      "nome": "Frutas",
+      "produtos": [
+        "Banana",
+        "Laranja",
+        "Maçã"
+      ]
+    },
+    {
+      "id": "castanhas-nozes",
+      "nome": "Castanhas e nozes",
+      "produtos": [
+        "Amendoim",
+        "Castanha-do-brasil"
+      ]
+    },
+    {
+      "id": "carnes-ovos",
+      "nome": "Carnes e ovos",
+      "produtos": [
+        "Carne bovina",
+        "Frango",
+        "Ovos"
+      ]
+    },
+    {
+      "id": "leites-queijos",
+      "nome": "Leites e queijos",
+      "produtos": [
+        "Iogurte",
+        "Leite",
+        "Leite em pó integral",
+        "Queijo"
+      ]
+    },
+    {
+      "id": "acucares-sal-gorduras",
+      "nome": "Açúcares, sal, óleos e gorduras",
+      "produtos": [
+        "Açúcar",
+        "Sal",
+        "Óleo"
+      ]
+    },
+    {
+      "id": "cafe-cha-especiarias",
+      "nome": "Café, chá e especiarias",
+      "produtos": [
+        "Café",
+        "Chá",
+        "Temperos"
+      ]
+    }
+  ]
+}

@@ -1,8 +1,20 @@
-
 name: Atualizar preços PreçoAí
 
 on:
   workflow_dispatch:
+    inputs:
+      gravar:
+        description: 'Gravar os preços novos no Firestore'
+        type: boolean
+        default: true
+      apagar_antigos:
+        description: 'Apagar do Firestore os dados que não fazem parte da coleta nova'
+        type: boolean
+        default: true
+      forcar:
+        description: 'Liberar a limpeza mesmo se for apagar mais de 60% de uma coleção (use só se for isso mesmo)'
+        type: boolean
+        default: false
 
   # Agendamento diário às 04h17 de Manaus.
   # Ativar somente depois dos testes de produção.
@@ -18,13 +30,19 @@ concurrency:
 
 jobs:
   coletar-e-validar:
-    name: Coletar e validar preços
+    name: Coletar, gravar e limpar
     runs-on: ubuntu-latest
     timeout-minutes: 180
 
     defaults:
       run:
         working-directory: coletor-sefaz
+
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      # Em execução agendada não há inputs: grava e limpa. Manualmente, vale o que for marcado.
+      GRAVAR: ${{ github.event_name != 'workflow_dispatch' || inputs.gravar }}
+      APAGAR: ${{ github.event_name != 'workflow_dispatch' || inputs.apagar_antigos }}
 
     steps:
       - name: Baixar projeto
@@ -48,11 +66,35 @@ jobs:
       - name: Coletar preços da SEFAZ-AM
         run: node index.js --max-paginas=10 --pausa-ms=2000
 
-      - name: Simular sincronização com Firestore
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      # Valida a coleta inteira (catálogo, cobertura mínima, preços) sem tocar no Firestore.
+      - name: Validar nova base (simulação)
         run: node sincronizar-firestore.js
+
+      - name: Gravar preços no Firestore
+        if: ${{ env.GRAVAR == 'true' }}
+        run: node sincronizar-firestore.js --executar
+
+      # Só roda depois da gravação: o script recusa apagar se algo da coleta nova ainda não estiver no Firestore.
+      - name: Simular limpeza
+        if: ${{ env.GRAVAR == 'true' && env.APAGAR == 'true' }}
+        run: node limpar-antigos.js
+
+      - name: Apagar dados antigos do Firestore
+        if: ${{ env.GRAVAR == 'true' && env.APAGAR == 'true' }}
+        run: node limpar-antigos.js --executar ${{ inputs.forcar && '--forcar' || '' }}
+
+      # Cópia dos documentos apagados (o script salva antes de apagar). Fica 7 dias.
+      - name: Guardar backup do que foi apagado
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-firestore
+          path: coletor-sefaz/dados/backup-*
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Finalização
         if: success()
-        run: echo "Coleta e simulação concluídas. Nenhum dado foi gravado no Firestore."
+        run: |
+          if [ "$GRAVAR" = "true" ]; then echo "Preços gravados no Firestore."; else echo "Coleta e simulação concluídas. Nada foi gravado."; fi
+          if [ "$GRAVAR" = "true" ] && [ "$APAGAR" = "true" ]; then echo "Dados antigos removidos."; fi

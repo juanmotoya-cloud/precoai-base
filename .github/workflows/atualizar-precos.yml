@@ -1,15 +1,26 @@
 
-name: Teste de coleta PreçoAí
+name: Atualizar preços PreçoAí
 
 on:
   workflow_dispatch:
 
+  # Agendamento diário às 04h17 de Manaus.
+  # Ativar somente depois dos testes de produção.
+  # schedule:
+  #   - cron: '17 8 * * *'
+
 permissions:
   contents: read
 
+concurrency:
+  group: precoai-atualizacao
+  cancel-in-progress: false
+
 jobs:
-  teste-coleta:
+  coletar-e-validar:
+    name: Coletar e validar preços
     runs-on: ubuntu-latest
+    timeout-minutes: 180
 
     defaults:
       run:
@@ -23,6 +34,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: coletor-sefaz/package-lock.json
 
       - name: Instalar dependências
         run: npm install
@@ -30,11 +43,16 @@ jobs:
       - name: Verificar catálogo
         run: |
           test -f ../dados/catalogo-sefaz.json
+          npm run validar:catalogo
 
-      - name: Coletar amostra da SEFAZ-AM
-        run: node index.js --max-paginas=1 --pausa-ms=2000
+      - name: Coletar preços da SEFAZ-AM
+        run: node index.js --max-paginas=10 --pausa-ms=2000
 
-      - name: Simular sincronização
+      - name: Simular sincronização com Firestore
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: node sincronizar-firestore.js
+
+      - name: Finalização
+        if: success()
+        run: echo "Coleta e simulação concluídas. Nenhum dado foi gravado no Firestore."

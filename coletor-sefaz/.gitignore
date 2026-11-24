@@ -5,3 +5,6 @@ dados/coletas/
 dados/html/
 dados/resposta-*.html
 atualizacao.log
+
+# backups gerados pela limpeza do Firestore (só ficam no artefato do GitHub Actions)
+dados/backup-*/

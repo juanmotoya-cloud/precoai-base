@@ -2,7 +2,7 @@
   "versao": 3,
   "fonte": "Busca Preço SEFAZ-AM",
   "descricao": "Catálogo detalhado para pesquisa e filtragem da Cesta Rápida com produtos de alimentação, bebidas, hortifruti, congelados, mercearia, laticínios, carnes, enlatados, higiene, limpeza e utilidades. Inclui termos de busca, critérios de inclusão/exclusão, atributos de comparação e validações iniciais. Regras devem ser calibradas com amostras reais da Busca Preço SEFAZ-AM.",
-  "totalProdutos": 144,
+  "totalProdutos": 145,
   "produtos": [
     {
       "id": "feijao-carioca",
@@ -624,7 +624,12 @@
         "nuggets",
         "salsicha",
         "linguica",
-        "mortadela"
+        "mortadela",
+        "conserva",
+        "enlatada",
+        "enlatado",
+        "em lata",
+        "corned beef"
       ],
       "unidadeReferencia": "kg",
       "observacao": "Conferir descrição e unidade antes de comparar preços.",
@@ -668,10 +673,58 @@
         "salsicha",
         "hamburguer",
         "ração",
-        "racao"
+        "racao",
+        "conserva",
+        "enlatada",
+        "enlatado",
+        "em lata",
+        "corned beef"
       ],
       "unidadeReferencia": "kg",
       "observacao": "Conferir descrição e unidade antes de comparar preços.",
+      "atributosComparacao": [
+        "peso líquido",
+        "tipo/variedade",
+        "marca",
+        "apresentação"
+      ],
+      "validacoes": [
+        "Confirmar que a descrição corresponde ao produto pesquisado",
+        "Verificar unidade e conteúdo líquido antes de comparar",
+        "Excluir preparações prontas, produtos para animais e itens de outra categoria",
+        "Normalizar a quantidade para a unidade de referência"
+      ]
+    },
+    {
+      "id": "carne-conserva",
+      "categoriaId": "carnes-ovos",
+      "nomeExibicao": "Carne em conserva",
+      "termosPesquisa": [
+        "carne em conserva",
+        "carne bovina em conserva",
+        "carne enlatada",
+        "corned beef",
+        "frango em conserva"
+      ],
+      "criteriosInclusao": [
+        "carne",
+        "conserva"
+      ],
+      "criteriosExclusao": [
+        "ração",
+        "racao",
+        "alimento para animais",
+        "alimento para caes",
+        "alimento para gatos",
+        "pate",
+        "feijoada",
+        "hamburguer",
+        "salsicha",
+        "linguica",
+        "mortadela"
+      ],
+      "unidadeReferencia": "kg",
+      "observacao": "Carne ou frango enlatado/em conserva. Fica separado da carne bovina e do frango frescos. Conferir descrição e unidade antes de comparar preços.",
       "atributosComparacao": [
         "peso líquido",
         "tipo/variedade",
@@ -3979,7 +4032,12 @@
         "empanado",
         "nuggets",
         "frango temperado pronto",
-        "ração"
+        "ração",
+        "conserva",
+        "enlatada",
+        "enlatado",
+        "em lata",
+        "corned beef"
       ],
       "unidadeReferencia": "kg",
       "observacao": "Separar filé, peito com osso e cortes temperados.",
@@ -4010,7 +4068,12 @@
         "hamburguer",
         "almond ega",
         "carne suina",
-        "linguica"
+        "linguica",
+        "conserva",
+        "enlatada",
+        "enlatado",
+        "em lata",
+        "corned beef"
       ],
       "unidadeReferencia": "kg",
       "observacao": "Registrar corte de origem e teor de gordura quando informado.",

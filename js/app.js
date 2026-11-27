@@ -1,5 +1,7 @@
-import { iconeCategoria } from "./icones.js";
-import { descricaoLegivel, buscarMenoresPrecos, pesquisarProdutos, bairrosDisponiveis, formatarPreco, tempoRelativo, UNIDADES } from "./banco.js";
+import { el, card as cardBase, linha as linhaBase } from "./cards.js";
+import { RAIOS_KM, lerPosicaoSalva, salvarPosicao, limparPosicao, dentroDeManaus, posicaoAproximada, estadoPermissao, obterPosicao, mensagemErro, lerBairroSalvo, salvarBairro, nomesDoBairroNoMapa } from "./localizacao.js";
+import { criarAnuncio, formatoAtual } from "./anuncios.js";
+import { buscarMenoresPrecos, pesquisarProdutos, bairrosDisponiveis, carregarResumo, combinarBairro, bairroMaisProximo } from "./banco.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const cesta = $("#cesta-produtos");
@@ -10,85 +12,29 @@ const tituloResultados = $("#resultados-titulo");
 const campoBusca = $("#search");
 const botaoLocalizacao = $("#location-btn");
 const textoLocalizacao = $("#location-label");
-const RAIO_KM = 3;
+const MIN_ITENS_NO_RAIO = 5;   // se o menor raio tiver menos produtos que isso, abre para o próximo
 
 const seletorBairro = $("#bairro-select");
 const rotuloOriginal = textoLocalizacao.innerHTML;
-const estado = { posicao: null, raioKm: null, bairro: "", categoria: "todos", texto: "" };
+const estado = { posicao: null, raioKm: null, manausInteira: false, aproximada: false, bairro: "", bairroNome: "", detectado: false, bairroForaDaBase: "", categoria: "todos", texto: "" };
 const nomesCategorias = {};
 document.querySelectorAll("#categorias .cat").forEach(b => {
     nomesCategorias[b.dataset.cat] = b.textContent.trim();
 });
 
-function el(tag, classe, texto) {
-    const e = document.createElement(tag);
-    if (classe) e.className = classe;
-    if (texto !== undefined) e.textContent = texto;
-    return e;
-}
-
 function opcoes() {
     return { latitude: estado.posicao?.latitude, longitude: estado.posicao?.longitude, raioKm: estado.raioKm, bairro: estado.bairro || null };
 }
 
-function meta(item) {
-    const km = Number.isFinite(item.distanciaKm) ? `${item.distanciaKm.toFixed(1).replace(".", ",")} km` : "";
-    return [item.mercado, item.bairro, km, tempoRelativo(item.dataConsulta)].filter(Boolean).join(" · ");
-}
-
-function botaoAdicionar(item) {
-    const b = el("button", "btn-add", window.listaIds?.has(item.id) ? "✓" : "+");
-    b.type = "button";
-    b.dataset.produtoId = item.id;
-    b.dataset.nome = item.nome;
-    b.classList.toggle("on", !!window.listaIds?.has(item.id));
-    b.setAttribute("aria-label", `${window.listaIds?.has(item.id) ? "Remover" : "Adicionar"} ${item.nome} ${window.listaIds?.has(item.id) ? "da" : "à"} lista`);
-    return b;
-}
-
-function preco(item) {
-    return `${formatarPreco(item.valor)} ${UNIDADES[item.unidade] || ""}`.trim();
-}
-
-// Toque no card abre a página do produto com todas as ofertas (marcas, mercados, bairros).
-function tornarClicavel(elemento, item) {
-    elemento.style.cursor = "pointer";
-    elemento.addEventListener("click", e => {
-        if (e.target.closest(".btn-add")) return;
-        const params = new URLSearchParams({ id: item.id });
-        if (estado.bairro) params.set("bairro", estado.bairro);
-        location.href = `produto.html?${params}`;
-    });
-}
-
-function card(item) {
-    const c = el("article", "card");
-    const img = el("div", "img");
-    img.append(iconeCategoria(item.categoriaId), el("span", "tag", "Menor preço"));
-    const linha = el("div", "price-row");
-    linha.append(el("strong", "price", preco(item)), botaoAdicionar(item));
-    c.append(img, el("h3", "", item.nome), el("p", "marca", descricaoLegivel(item.nomeEncontrado)), el("p", "meta", meta(item)), linha);
-    tornarClicavel(c, item);
-    return c;
-}
-
-function linha(item) {
-    const a = el("article", "row");
-    const info = el("div", "row-info");
-    info.append(el("h3", "", item.nome), el("p", "marca", descricaoLegivel(item.nomeEncontrado)), el("p", "meta", meta(item)), el("strong", "price", preco(item)));
-    const fig = el("div", "img");
-    fig.append(iconeCategoria(item.categoriaId));
-    a.append(fig, info, botaoAdicionar(item));
-    tornarClicavel(a, item);
-    return a;
-}
+const card = item => cardBase(item, { bairro: estado.bairro });
+const linha = item => linhaBase(item, { bairro: estado.bairro });
 
 function mensagem(texto, comBotao) {
     const p = el("p", "estado", texto);
     if (comBotao) {
         const b = el("button", "btn-amarelo", "Ver Manaus inteira");
         b.type = "button";
-        b.addEventListener("click", () => { estado.raioKm = null; atualizar(); });
+        b.addEventListener("click", () => { estado.manausInteira = true; atualizar(); });
         p.append(document.createElement("br"), b);
     }
     return p;
@@ -97,8 +43,33 @@ function mensagem(texto, comBotao) {
 function vazio() {
     if (estado.bairro) return mensagem("Não encontramos preços recentes neste bairro. Escolha outro bairro ou veja Manaus inteira.");
     return estado.raioKm
-        ? mensagem(`Não encontramos preços recentes em mercados a até ${RAIO_KM} km.`, true)
+        ? mensagem(`Não encontramos preços recentes em mercados a até ${estado.raioKm} km.`, true)
         : mensagem("Ainda não há preços recentes para estes itens.");
+}
+
+// Texto do botão de localização, conforme o que está valendo agora.
+function atualizarRotulo() {
+    if (estado.bairro) {
+        textoLocalizacao.textContent = `Preços no bairro ${estado.bairroNome}${estado.detectado ? " · detectado pela sua localização · toque para atualizar" : ""}`;
+    } else if (estado.posicao && estado.bairroForaDaBase) {
+        textoLocalizacao.textContent = `Você está em ${estado.bairroForaDaBase}, sem preços recentes aqui: mostrando mercados perto de você · toque para atualizar`;
+    } else if (estado.posicao && estado.raioKm) {
+        textoLocalizacao.textContent = `Preços em até ${estado.raioKm} km da sua localização${estado.aproximada ? " (aproximada)" : ""} · toque para atualizar`;
+    } else if (estado.posicao) {
+        textoLocalizacao.textContent = "Poucos mercados perto de você: mostrando Manaus inteira, do mais perto ao mais longe · toque para atualizar";
+    } else {
+        textoLocalizacao.innerHTML = rotuloOriginal;
+    }
+}
+
+// Menor raio (3, 5 ou 10 km) que já traz produtos suficientes; se nenhum, Manaus inteira.
+async function escolherRaio() {
+    if (estado.manausInteira) return null;
+    for (const r of RAIOS_KM) {
+        const itens = await buscarMenoresPrecos({ ...opcoes(), raioKm: r });
+        if (itens.length >= MIN_ITENS_NO_RAIO) return r;
+    }
+    return null;
 }
 
 function desenharResultados(titulo, itens) {
@@ -107,37 +78,51 @@ function desenharResultados(titulo, itens) {
     gridResultados.replaceChildren(...(itens.length ? itens.map(card) : [vazio()]));
 }
 
+// Opção do <select> para um bairro (usada na lista completa e para mostrar o bairro salvo antes da lista chegar).
+function opcaoBairro(chave, nome) {
+    const o = document.createElement("option");
+    o.value = chave;
+    o.textContent = nome;
+    return o;
+}
+
+// O bairro salvo aparece no seletor já na primeira tela, sem esperar o banco responder.
+function mostrarBairroSalvo() {
+    if (!estado.bairro || !seletorBairro) return;
+    seletorBairro.appendChild(opcaoBairro(estado.bairro, estado.bairroNome));
+    seletorBairro.value = estado.bairro;
+}
+
 let bairrosPreenchidos = false;
 async function preencherBairros() {
     if (bairrosPreenchidos) return;
     const lista = await bairrosDisponiveis();
     if (!lista.length) return;
     bairrosPreenchidos = true;
-    lista.forEach(b => {
-        const o = document.createElement("option");
-        o.value = b.chave;
-        o.textContent = b.nome;
-        seletorBairro.appendChild(o);
-    });
+    const escolhido = estado.bairro;
+    seletorBairro.replaceChildren(opcaoBairro("", "Todos os bairros de Manaus"), ...lista.map(b => opcaoBairro(b.chave, b.nome)));
+    if (escolhido) {
+        // Nunca apaga a escolha do usuário: se o bairro não tem ofertas agora, ele continua selecionado
+        // (a tela avisa que não há preços recentes e ele pode trocar quando quiser).
+        if (![...seletorBairro.options].some(o => o.value === escolhido)) seletorBairro.appendChild(opcaoBairro(escolhido, estado.bairroNome));
+        seletorBairro.value = escolhido;
+    }
 }
 
 seletorBairro?.addEventListener("change", () => {
     estado.bairro = seletorBairro.value;
-    if (estado.bairro) {
-        estado.raioKm = null; // o bairro escolhido substitui o raio de 3 km
-        textoLocalizacao.textContent = `Preços no bairro ${seletorBairro.selectedOptions[0].textContent}`;
-    } else if (estado.posicao) {
-        estado.raioKm = RAIO_KM;
-        textoLocalizacao.textContent = `Preços em até ${RAIO_KM} km da sua localização`;
-    } else {
-        textoLocalizacao.innerHTML = rotuloOriginal;
-    }
+    estado.bairroNome = estado.bairro ? seletorBairro.selectedOptions[0].textContent : "";
+    estado.detectado = false; estado.bairroForaDaBase = "";
+    salvarBairro(estado.bairro, estado.bairroNome);   // lembra a escolha nas próximas visitas
     atualizar();
 });
 
 async function atualizar() {
     cesta.replaceChildren(mensagem("Carregando menores preços..."));
     try {
+        estado.raioKm = estado.posicao && !estado.bairro ? await escolherRaio() : null;
+        if (estado.posicao) salvarPosicao(estado.posicao, estado.bairro ? null : estado.raioKm);
+        atualizarRotulo();
         const todos = await buscarMenoresPrecos(opcoes());
         preencherBairros().catch(console.error);
 
@@ -187,33 +172,83 @@ $("#categorias")?.addEventListener("click", e => {
     location.href = `categoria.html?${params}`;
 });
 
-// ---- Localização (só depois do toque do usuário)
-function ativarLocalizacao() {
-    if (!navigator.geolocation) {
-        textoLocalizacao.textContent = "Seu navegador não oferece suporte à localização.";
-        return;
+// ---- Localização do celular
+// O navegador só pede permissão depois de um toque do usuário. Se a permissão já foi dada antes
+// (ou a posição ainda está guardada, 30 min), o app usa a localização sozinho ao abrir.
+function receberPosicao(posicao, { manterBairro = false } = {}) {
+    if (!dentroDeManaus(posicao)) {
+        estado.posicao = null;
+        limparPosicao();
+        textoLocalizacao.textContent = "Você parece estar fora de Manaus. O PreçoAí mostra os preços de Manaus inteira.";
+        return false;
     }
+    estado.posicao = posicao;
+    estado.aproximada = posicaoAproximada(posicao);
+    estado.manausInteira = false;
+    // Tocar em "Usar minha localização" troca o bairro pela posição do celular. Já a localização automática
+    // (silenciosa) nunca desfaz o bairro que o usuário escolheu: só guarda a posição para mostrar distâncias.
+    if (!manterBairro) {
+        estado.bairro = ""; estado.bairroNome = "";
+        salvarBairro(null);
+        if (seletorBairro) seletorBairro.value = "";
+    }
+    return true;
+}
+
+// Descobre o bairro de quem está com a localização ligada e seleciona (e guarda) esse bairro.
+// Se o bairro não tem preços recentes, volta para "mercados perto de você" e avisa onde a pessoa está.
+async function detectarBairro(posicao) {
+    estado.detectado = false; estado.bairroForaDaBase = "";
+    try {
+        const [lista, nomes] = await Promise.all([bairrosDisponiveis(), nomesDoBairroNoMapa(posicao)]);
+        let achado = combinarBairro(nomes, lista);
+        if (!achado && !nomes.length) achado = bairroMaisProximo(await carregarResumo(), posicao.latitude, posicao.longitude);
+        if (!achado) { estado.bairroForaDaBase = nomes[0] || ""; return; }
+        const itens = await buscarMenoresPrecos({ bairro: achado.chave });
+        if (!itens.length) { estado.bairroForaDaBase = achado.nome; return; }
+        estado.bairro = achado.chave; estado.bairroNome = achado.nome; estado.detectado = true;
+        salvarBairro(achado.chave, achado.nome);
+        if (![...seletorBairro.options].some(o => o.value === achado.chave)) seletorBairro.appendChild(opcaoBairro(achado.chave, achado.nome));
+        seletorBairro.value = achado.chave;
+    } catch (erro) { console.warn("Bairro:", erro); }
+}
+
+async function ativarLocalizacao({ silencioso = false } = {}) {
     textoLocalizacao.textContent = "Obtendo sua localização...";
     botaoLocalizacao.disabled = true;
-    navigator.geolocation.getCurrentPosition(
-        async pos => {
-            estado.posicao = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
-            estado.raioKm = RAIO_KM;
-            estado.bairro = "";
-            if (seletorBairro) seletorBairro.value = "";
-            textoLocalizacao.textContent = `Preços em até ${RAIO_KM} km da sua localização`;
-            botaoLocalizacao.disabled = false;
+    try {
+        const posicao = await obterPosicao();
+        // Se o usuário escolheu um bairro enquanto a posição chegava, a escolha dele vale.
+        if (receberPosicao(posicao, { manterBairro: silencioso })) {
+            textoLocalizacao.textContent = "Descobrindo o seu bairro...";
+            // se o usuário escolheu um bairro enquanto a posição chegava, a escolha dele vale
+            if (!(silencioso && estado.bairro)) await detectarBairro(posicao);
             await atualizar();
-        },
-        erro => {
-            const msgs = { 1: "Localização negada. Mostrando preços de Manaus inteira.", 2: "Não foi possível identificar sua localização.", 3: "A localização demorou demais. Tente novamente." };
-            textoLocalizacao.textContent = msgs[erro.code] || "Não foi possível obter a localização.";
-            botaoLocalizacao.disabled = false;
-        },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
-    );
+        }
+    } catch (erro) {
+        console.warn("Localização:", erro);
+        if (silencioso) textoLocalizacao.innerHTML = rotuloOriginal;
+        else textoLocalizacao.textContent = mensagemErro(erro);
+    } finally {
+        botaoLocalizacao.disabled = false;
+    }
 }
-botaoLocalizacao?.addEventListener("click", ativarLocalizacao);
+botaoLocalizacao?.addEventListener("click", () => ativarLocalizacao());
 
-// Ao abrir, já mostra os menores preços de Manaus; o raio de 3 km entra quando o usuário ativar a localização.
-atualizar();
+async function iniciar() {
+    // Bairro escolhido numa visita anterior (se houver) vale já na primeira tela.
+    const bairroSalvo = lerBairroSalvo();
+    if (bairroSalvo) { estado.bairro = bairroSalvo.chave; estado.bairroNome = bairroSalvo.nome; mostrarBairroSalvo(); }
+    const salva = lerPosicaoSalva();
+    if (salva && dentroDeManaus(salva)) {
+        // mantém o bairro escolhido; a posição só serve para mostrar as distâncias
+        estado.posicao = salva;
+        estado.aproximada = posicaoAproximada(salva);
+    }
+    atualizar();
+    if (!estado.posicao && !estado.bairro && await estadoPermissao() === "granted") ativarLocalizacao({ silencioso: true });
+}
+// Espaço de anúncio abaixo das categorias (segue o filtro 300×100 / 970×90 escolhido na página de categoria).
+const formatoAnuncio = formatoAtual();
+if (formatoAnuncio) $("#anuncio-categorias")?.append(criarAnuncio(formatoAnuncio));
+iniciar();

@@ -91,8 +91,9 @@ $('.bottom-nav').addEventListener('click', e => {
   if (!b) return;
   const k = b.dataset.nav;
   if (k === 'inicio') scrollTo({ top: 0, behavior: 'smooth' });
-  else if (k === 'buscar') { scrollTo({ top: 0, behavior: 'smooth' }); $('#search').focus({ preventScroll: true }); }
-  else if (k === 'cesta') toast(window.listaIds.size ? window.listaIds.size + ' item(ns) na cesta · tela em breve' : 'Sua cesta está vazia');
+  else if (k === 'buscar') location.href = 'busca.html';   // página de busca com sugestões
+  else if (k === 'cesta') location.href = 'cesta.html';
+  else if (k === 'favoritos') location.href = 'cesta.html?tipo=favoritos';
   else toast('Em breve');
 });
 $('#perfil-btn').addEventListener('click', () => toast('Perfil em breve'));

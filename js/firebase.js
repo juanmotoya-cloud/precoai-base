@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-analytics.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyA7rNyyggeuJTuC42Z5JrWwdjdf8HBI3TQ",
@@ -15,11 +14,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Analytics é carregado depois, sem atrasar a abertura dos preços.
 let analytics = null;
-try {
-    analytics = getAnalytics(app);
-} catch (erro) {
-    console.warn("Analytics indisponível:", erro);
-}
+import("https://www.gstatic.com/firebasejs/13.2.0/firebase-analytics.js")
+    .then(m => { analytics = m.getAnalytics(app); })
+    .catch(erro => console.warn("Analytics indisponível:", erro));
 
 export { app, db, analytics, collection, getDocs };

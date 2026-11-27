@@ -2,8 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { analisarDescricao } from "../js/precos.js";
 import { lerCredencial, PROJETO_ESPERADO } from "./credencial.js";
-import { normalizar, tempoParaData, extrairBairro, extrairTamanho, nomeExcluido, mediana } from "./enriquecer.js";
+import { normalizar, tempoParaData, extrairBairro, extrairTamanho, extrairUnidades, nomeExcluido, mediana, corrigirCoordenadas } from "./enriquecer.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,8 +46,8 @@ export function lerArgumentos(argv = process.argv.slice(2)) {
   if (bruto.executar !== undefined && bruto.executar !== true) throw new Error("--executar não aceita valor.");
   let produto = null;
   if (bruto.produto !== undefined) {
-    if (typeof bruto.produto !== "string" || !/^[a-z0-9-]+$/.test(bruto.produto)) {
-      throw new Error("--produto precisa ser um id do catálogo (letras minúsculas, números e hífen).");
+    if (typeof bruto.produto !== "string" || !/^[\p{Ll}\p{N}-]+$/u.test(bruto.produto)) {
+      throw new Error("--produto precisa ser um id do catálogo (letras minúsculas, com ou sem acento, números e hífen).");
     }
     produto = bruto.produto;
   }
@@ -71,12 +72,7 @@ function dataValida(valor, fallback) {
 }
 
 function coordenadasValidas(latitude, longitude) {
-  const lat = Number(latitude);
-  const lon = Number(longitude);
-  if (latitude === null || longitude === null || latitude === undefined || longitude === undefined) return null;
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
-  return { latitude: lat, longitude: lon };
+  return corrigirCoordenadas(latitude, longitude);   // também desfaz o par invertido (longitude, latitude)
 }
 
 function extrairMunicipio(endereco = "") {
@@ -114,8 +110,7 @@ export function carregarColetas(filtroProduto) {
     if (!dados || !dados.produtoId || !Array.isArray(dados.resultados)) {
       throw new Error(`Formato inválido no arquivo ${arquivo}.`);
     }
-    dados.produtoId = idSemAcento(dados.produtoId);
-    if (dados.produtoId !== idSemAcento(path.basename(arquivo, ".json"))) {
+    if (dados.produtoId !== path.basename(arquivo, ".json")) {
       throw new Error(`O produtoId "${dados.produtoId}" não corresponde ao nome do arquivo ${arquivo}.`);
     }
     if (vistos.has(dados.produtoId)) throw new Error(`Produto repetido nas coletas: ${dados.produtoId}.`);
@@ -123,9 +118,6 @@ export function carregarColetas(filtroProduto) {
     return dados;
   });
 }
-
-// Ids sempre sem acento e em minúsculas ("feijão-carioca" -> "feijao-carioca").
-const idSemAcento = (id) => String(id ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 export function carregarCatalogo(caminho = CATALOGO_PATH) {
   if (!fs.existsSync(caminho)) throw new Error(`Catálogo não encontrado: ${caminho}`);
@@ -138,14 +130,23 @@ export function carregarCatalogo(caminho = CATALOGO_PATH) {
   const mapa = new Map();
   for (const p of catalogo.produtos) {
     if (!p || typeof p.id !== "string" || !p.id) throw new Error("Catálogo inválido: produto sem id.");
-    const id = idSemAcento(p.id);
-    if (mapa.has(id)) throw new Error(`Catálogo inválido: id repetido (${id}).`);
-    mapa.set(id, { ...p, id });
+    if (mapa.has(p.id)) throw new Error(`Catálogo inválido: id repetido (${p.id}).`);
+    mapa.set(p.id, p);
   }
   return mapa;
 }
 
 // ---------------------------------------------------------------- preparação
+
+// Marca (só do dicionário), variação (tipo 1, integral...) e tamanho legível — gravados na oferta para a busca por marca.
+function detalhesOferta(item, meta, unidade) {
+  const d = analisarDescricao(item.nomeEncontrado || "", meta.nomeExibicao || "", unidade, meta.contarUnidades ? null : item.quantidade);
+  return {
+    ...(d.marcaConhecida && d.marca ? { marca: d.marca } : {}),
+    ...(d.variacao ? { variacao: d.variacao } : {}),
+    ...(d.tamanho ? { tamanhoTexto: d.tamanho } : {})
+  };
+}
 
 // Enriquece cada item: data real da nota, bairro, tamanho da embalagem e preço por kg/litro.
 // Descarta descrições que não são produto (ADICIONAL, PORÇÃO...) e preços fora da faixa (outliers).
@@ -163,7 +164,11 @@ function prepararItens(coleta, meta, maxDias) {
     const emitidoEm = tempoParaData(item.tempoDesdeEmissao, coletadoEm) || coletadoEm;
     // Só entram notas dos últimos N dias.
     if (Date.now() - emitidoEm.getTime() > maxDias * 864e5) { descartes.antigo++; continue; }
-    const quantidade = extrairTamanho(item.nomeEncontrado || "", unidade);
+    // Produtos vendidos em cartela (ovos): preço por unidade; sem a quantidade não dá para comparar, então descarta.
+    const quantidade = meta.contarUnidades
+      ? extrairUnidades(item.nomeEncontrado || "")
+      : extrairTamanho(item.nomeEncontrado || "", unidade, { volumeComoMassa: meta.volumeComoMassa === true });
+    if (meta.contarUnidades && !quantidade) { descartes.nome++; continue; }
     itens.push({
       ...item, preco, coletadoEm, emitidoEm, quantidade,
       precoReferencia: quantidade ? arredondar(preco / quantidade) : null
@@ -263,12 +268,14 @@ export function montarPlano(coletas, catalogo, limitePrecos = 0, maxDias = 7) {
 
       // Ofertas com tamanho identificado entram no ranking por kg/litro (precisam de coordenadas).
       // As sem tamanho (precoReferencia null) aparecem só como preço de embalagem.
-      if (item.precoReferencia !== null ? coordenadas : true) {
+      // Loja sem coordenada continua valendo: o site só a esconde quando o filtro é por distância.
+      {
         ofertas.push({
           estabelecimentoId, mercado: nomeEstabelecimento, bairro, endereco: endereco || null,
           latitude: coordenadas?.latitude ?? null, longitude: coordenadas?.longitude ?? null,
           nomeEncontrado: item.nomeEncontrado, preco: item.preco, quantidade: item.quantidade,
-          precoReferencia: item.precoReferencia, dataConsulta: item.emitidoEm
+          precoReferencia: item.precoReferencia, dataConsulta: item.emitidoEm,
+          ...detalhesOferta(item, meta, unidade)
         });
       }
     }

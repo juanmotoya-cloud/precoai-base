@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { corrigirCoordenadas } from "./enriquecer.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +18,8 @@ const CONFIG = {
   timeoutMs: Number(process.env.TIMEOUT_MS || 30000),
   limiteProdutos: Number(process.env.LIMITE_PRODUTOS || 0),
   maxTermos: Number(process.env.MAX_TERMOS || 0),
+  comMarcas: process.env.COM_MARCAS === "1",            // também pesquisa "<produto> <marca>" (catálogo: marcasBusca)
+  maxPaginasMarca: Number(process.env.MAX_PAGINAS_MARCA || 3),
   salvarHtml: process.env.SALVAR_HTML === "1"
 };
 
@@ -40,10 +43,6 @@ function normalizar(texto = "") {
     .replace(/\s+/g, " ");
 }
 
-function idSemAcento(id = "") {
-  return String(id).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-}
-
 function escaparRegex(texto) {
   return texto.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -53,7 +52,8 @@ function contemExpressao(texto, expressao) {
   const alvo = normalizar(expressao);
   if (!base || !alvo) return false;
   // Procura palavras/expressões completas, evitando "sal" dentro de "salgadinho".
-  return new RegExp(`(?:^| )${escaparRegex(alvo)}(?:$| )`).test(base);
+  // Aceita o plural simples ("ovo" também acha "ovos"), sempre como palavra inteira.
+  return new RegExp(`(?:^| )${escaparRegex(alvo)}s?(?:$| )`).test(base);
 }
 
 function converterPreco(texto = "") {
@@ -66,9 +66,16 @@ function converterPreco(texto = "") {
   return Number.isFinite(valor) ? valor : null;
 }
 
+// Palavras que nunca indicam o alimento procurado (sabores, higiene, limpeza, ração).
+const EXCLUSOES_GLOBAIS = ["sabor", "sab", "aroma", "aromatizante", "essencia", "racao", "pet", "cachorro", "cachorros", "gato", "gatos",
+  "shampoo", "condicionador", "sabonete", "detergente", "desinfetante", "amaciante", "hidratante", "perfume", "colonia"];
+
 function correspondeAoProduto(nome, produto) {
   const descricao = normalizar(nome);
   if (!descricao) return { aceito: false, motivo: "descricao_vazia" };
+
+  const global = EXCLUSOES_GLOBAIS.find((termo) => contemExpressao(descricao, termo));
+  if (global) return { aceito: false, motivo: "termo_excluido", termo: global };
 
   const exclusoes = produto.criteriosExclusao || [];
   const exclusao = exclusoes.find((termo) => contemExpressao(descricao, termo));
@@ -98,8 +105,8 @@ function extrairCoordenadas(card) {
   const onclick = card.find('a[onclick*="refreshMap"]').attr("onclick") || "";
   const match = onclick.match(/refreshMap\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)/i);
   if (!match) return { latitude: null, longitude: null };
-  // A página chama refreshMap(longitude, latitude).
-  return { longitude: Number(match[1]), latitude: Number(match[2]) };
+  // Não dá para confiar na ordem em que a página passa os valores: corrigirCoordenadas detecta o par invertido.
+  return corrigirCoordenadas(match[1], match[2]) || { latitude: null, longitude: null };
 }
 
 function extrairResultados(html, produto, pagina = 1) {
@@ -131,7 +138,7 @@ function extrairResultados(html, produto, pagina = 1) {
       rejeitados.preco_invalido++;
       return;
     }
-    if (preco <= 0.01) {
+    if (preco <= 0.01 || preco > 5000) {
       rejeitados.preco_suspeito++;
       return;
     }
@@ -191,19 +198,28 @@ async function requisitar(url, opcoes = {}, cookies = "") {
     ...(cookies ? { Cookie: cookies } : {}),
     ...(opcoes.headers || {})
   };
-  const resposta = await fetch(url, {
-    ...opcoes,
-    headers,
-    signal: AbortSignal.timeout(CONFIG.timeoutMs),
-    redirect: "follow"
-  });
-  if (!resposta.ok) throw new Error(`HTTP ${resposta.status} em ${url}`);
+  // Até 3 tentativas com espera crescente em falha de rede, timeout, 429 ou erro 5xx (SEFAZ instável).
+  let resposta, ultimoErro;
+  for (let tentativa = 1; tentativa <= 3; tentativa++) {
+    try {
+      resposta = await fetch(url, { ...opcoes, headers, signal: AbortSignal.timeout(CONFIG.timeoutMs), redirect: "follow" });
+      if (resposta.ok) break;
+      ultimoErro = new Error(`HTTP ${resposta.status} em ${url}`);
+      if (resposta.status !== 429 && resposta.status < 500) throw ultimoErro;
+    } catch (erro) {
+      ultimoErro = erro;
+      if (/^HTTP 4\d\d/.test(erro.message) && !/HTTP 429/.test(erro.message)) throw erro;
+    }
+    resposta = null;
+    if (tentativa < 3) await esperar(CONFIG.pausaMs * tentativa * 2);
+  }
+  if (!resposta) throw ultimoErro;
   const buffer = Buffer.from(await resposta.arrayBuffer());
   // A SEFAZ responde em ISO-8859-1; decodificar como UTF-8 gerava "H�" e acentos quebrados.
   return { html: buffer.toString("latin1"), cookies: atualizarCookies(cookies, resposta), urlFinal: resposta.url };
 }
 
-async function consultarTermo(termo, produto) {
+async function consultarTermo(termo, produto, maxPaginas = CONFIG.maxPaginas) {
   const formulario = new URLSearchParams({ descricaoProd: termo, termoCdGtin: "" });
   const primeira = await requisitar(URL_CONSULTA, {
     method: "POST",
@@ -212,15 +228,20 @@ async function consultarTermo(termo, produto) {
   });
 
   const maxPaginaEncontrada = paginasDisponiveis(primeira.html);
-  const limite = Math.max(1, Math.min(CONFIG.maxPaginas, maxPaginaEncontrada));
+  const limite = Math.max(1, Math.min(maxPaginas, maxPaginaEncontrada));
   const paginas = [{ numero: 1, html: primeira.html }];
   let cookies = primeira.cookies;
 
   for (let numero = 2; numero <= limite; numero++) {
     await esperar(CONFIG.pausaMs);
-    const pagina = await requisitar(`${BASE_URL}/item/grupo/page/${numero}`, { method: "GET" }, cookies);
-    cookies = pagina.cookies;
-    paginas.push({ numero, html: pagina.html });
+    try {
+      const pagina = await requisitar(`${BASE_URL}/item/grupo/page/${numero}`, { method: "GET" }, cookies);
+      cookies = pagina.cookies;
+      paginas.push({ numero, html: pagina.html });
+    } catch (erro) {
+      console.error(`  Página ${numero} de "${termo}" falhou (${erro.message}); seguindo com o que já foi coletado.`);
+      break;
+    }
   }
 
   const resultados = [];
@@ -255,13 +276,16 @@ function carregarCatalogo() {
   if (!fs.existsSync(CATALOGO_PATH)) throw new Error(`Catálogo não encontrado: ${CATALOGO_PATH}`);
   const catalogo = JSON.parse(fs.readFileSync(CATALOGO_PATH, "utf8"));
   if (!Array.isArray(catalogo.produtos)) throw new Error("Formato inválido: catalogo.produtos precisa ser uma lista.");
-  // Garante ids sem acento (ex.: "feijão-carioca" vira "feijao-carioca"), igual aos nomes dos arquivos de coleta.
-  return catalogo.produtos.map((p) => ({ ...p, id: idSemAcento(p.id) }));
+  return catalogo.produtos;
 }
 
 async function coletarProduto(produto) {
   const termos = Array.isArray(produto.termosPesquisa) ? produto.termosPesquisa : [];
-  const listaTermos = CONFIG.maxTermos > 0 ? termos.slice(0, CONFIG.maxTermos) : termos;
+  const base = CONFIG.maxTermos > 0 ? termos.slice(0, CONFIG.maxTermos) : termos;
+  // Pesquisa por marca: "arroz tio joao". Poucas páginas por marca, para não alongar a coleta.
+  const porMarca = CONFIG.comMarcas ? (produto.marcasBusca || []).map((m) => `${normalizar(produto.nomeExibicao)} ${normalizar(m)}`) : [];
+  const listaTermos = [...base, ...porMarca];
+  const ehMarca = (termo) => porMarca.includes(termo);
   const todos = [];
   const consultas = [];
   const falhas = [];
@@ -271,7 +295,7 @@ async function coletarProduto(produto) {
     const termo = listaTermos[i];
     try {
       console.log(`  Pesquisando "${termo}" (${i + 1}/${listaTermos.length})...`);
-      const consulta = await consultarTermo(termo, produto);
+      const consulta = await consultarTermo(termo, produto, ehMarca(termo) ? CONFIG.maxPaginasMarca : CONFIG.maxPaginas);
       consultas.push({ termo: consulta.termo, paginasConsultadas: consulta.paginasConsultadas, paginasDisponiveis: consulta.paginasDisponiveis, cardsAnalisados: consulta.cardsAnalisados, resultadosAceitos: consulta.resultados.length, rejeitados: consulta.rejeitados });
       todos.push(...consulta.resultados);
       console.log(`  ${consulta.resultados.length} resultado(s) aceito(s) em ${consulta.cardsAnalisados} cartão(ões).`);
@@ -315,6 +339,7 @@ async function main() {
   if (args["max-paginas"]) CONFIG.maxPaginas = Number(args["max-paginas"]);
   if (args["pausa-ms"]) CONFIG.pausaMs = Number(args["pausa-ms"]);
   if (args["max-termos"]) CONFIG.maxTermos = Number(args["max-termos"]);
+  if (args.marcas) CONFIG.comMarcas = true;
 
   console.log("============================================");
   console.log("PREÇO AÍ — COLETOR GENÉRICO SEFAZ-AM");
@@ -351,6 +376,9 @@ async function main() {
   console.log("COLETA FINALIZADA");
   console.log(`Produtos processados: ${resumo.produtosProcessados.length}`);
   console.log(`Resultados únicos: ${resumo.totalResultados}`);
+  const semResultado = resumo.produtosProcessados.filter((p) => p.quantidade === 0).map((p) => p.produtoId);
+  if (semResultado.length) console.warn(`ATENÇÃO — produtos sem nenhum resultado: ${semResultado.join(", ")}`);
+  if (!resumo.totalResultados) throw new Error("A coleta terminou sem nenhum resultado (SEFAZ fora do ar ou página mudou). Nada será sincronizado.");
   console.log(`Resumo: ${path.relative(ROOT_DIR, path.join(pastaSaida, "resumo-ultima-coleta.json"))}`);
   console.log("============================================");
 }

@@ -50,17 +50,18 @@ export function extrairBairro(endereco = "") {
 }
 
 // Extrai a quantidade da embalagem em kg ou litros, conforme a unidade de comparação do produto.
-export function extrairTamanho(nome, unidade) {
+// opcoes.volumeComoMassa: laticínios e chás vendidos em g ou ml (1 ml ≈ 1 g) — aceita as duas medidas.
+export function extrairTamanho(nome, unidade, opcoes = {}) {
   if (unidade !== "kg" && unidade !== "l") return null;
   const t = semAcento(nome).toUpperCase();
   const massa = { KG: 1, KGS: 1, K: 1, G: 0.001, GR: 0.001, GRS: 0.001 };
   const volume = { L: 1, LT: 1, LTS: 1, ML: 0.001 };
-  const tabela = unidade === "kg" ? massa : volume;
+  const tabela = opcoes.volumeComoMassa ? { ...massa, ...volume } : (unidade === "kg" ? massa : volume);
   // Fardo/multipack: "30X1KG" = 30 kg, "12X200ML" = 2,4 L.
   const multi = t.match(/(?<![A-Z0-9])(\d+)\s*X\s*(\d+(?:[.,]\d+)?)\s*(KGS?|K|GRS?|G|ML|LTS?|L)(?![A-Z])/);
   if (multi && tabela[multi[3]]) {
     const total = Number(multi[1]) * Number(multi[2].replace(",", ".")) * tabela[multi[3]];
-    return total >= 0.05 && total <= 30 ? total : null;
+    return total >= 0.005 && total <= 30 ? total : null;
   }
   const re = /(?<![A-Z0-9])(\d+(?:[.,]\d+)?)\s*(KGS?|K|GRS?|G|ML|LTS?|L)(?![A-Z])/g;
   let m;
@@ -73,10 +74,21 @@ export function extrairTamanho(nome, unidade) {
     const solta = unidade === "kg" ? /(?<![A-Z0-9])KGS?(?![A-Z])/ : /(?<![A-Z0-9])(LTS?|L)(?![A-Z])/;
     if (solta.test(t)) quantidade = 1; // "ARROZ ... KG" = 1 kg
   }
-  return quantidade && quantidade >= 0.05 && quantidade <= 30 ? quantidade : null;
+  return quantidade && quantidade >= 0.005 && quantidade <= 30 ? quantidade : null;
 }
 
-export const NOME_EXCLUIDO = /(?<![A-Z])(ADICIONAL|PORCAO|COMBO|MARMITA|BUFFET|REFEICAO|ALMOCO|LANCHE)(?![A-Z])/;
+// Quantidade de itens da embalagem (ovos: "C/30", "12 UN", "DUZIA"). Devolve null quando não dá para saber.
+export function extrairUnidades(nome) {
+  const t = semAcento(nome).toUpperCase();
+  if (/(?<![A-Z0-9])(MEIA|1\/2)\s*(DUZIA|DZ)(?![A-Z])/.test(t)) return 6;
+  if (/(?<![A-Z0-9])(DUZIA|DZ)(?![A-Z])/.test(t)) return 12;
+  const m = t.match(/(?<![A-Z0-9])(?:C\s*\/|C|COM|CX\s*C\s*\/?|BANDEJA|CARTELA(?:\s*C)?|CRT|BDJ)\s*(\d{1,3})(?![0-9])/) ||
+    t.match(/(?<![A-Z0-9.,])(\d{1,3})\s*(?:UN|UND|UNID|UNIDS|UNIDADES|OVOS?)(?![A-Z])/);
+  if (m) { const n = Number(m[1]); return n >= 2 && n <= 180 ? n : (n === 1 ? 1 : null); }
+  return /(?<![A-Z0-9])(UN|UND|UNID)(?![A-Z])/.test(t) ? 1 : null;
+}
+
+export const NOME_EXCLUIDO = /(?<![A-Z])(ADICIONAL|ADICI|ADIC|PORCAO|COMBO|MARMITA|BUFFET|REFEICAO|ALMOCO|LANCHE|SEMENTES?|PAPEL|FORMA)(?![A-Z])/;
 
 export function nomeExcluido(nome) {
   return NOME_EXCLUIDO.test(semAcento(nome).toUpperCase());
@@ -87,4 +99,18 @@ export function mediana(valores) {
   if (!v.length) return null;
   const meio = Math.floor(v.length / 2);
   return v.length % 2 ? v[meio] : (v[meio - 1] + v[meio]) / 2;
+}
+
+// A SEFAZ às vezes entrega o par invertido (longitude, latitude). Em Manaus a latitude é ≈ -3 e a longitude ≈ -60:
+// se a "latitude" sai fora da faixa do Brasil (|valor| > 34) e a "longitude" cabe como latitude, os valores são trocados.
+// Valores ausentes viram null (Number(null) seria 0 e criaria lojas falsas em 0,0).
+export function corrigirCoordenadas(latitude, longitude) {
+  const vazio = (v) => v === null || v === undefined || v === "";
+  if (vazio(latitude) || vazio(longitude)) return null;
+  let lat = Number(latitude);
+  let lon = Number(longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  if (Math.abs(lat) > 34 && Math.abs(lon) <= 34) [lat, lon] = [lon, lat];
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+  return { latitude: lat, longitude: lon };
 }

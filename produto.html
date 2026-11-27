@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Compare o preço deste produto em mercados de Manaus." />
+  <meta name="theme-color" content="#F20D18" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/app-192.png" />
   <title>PreçoAí — Produto</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
@@ -26,6 +30,7 @@
         <div><h2>Comparação de preços</h2><p class="sub" id="comp-sub">Do menor para o maior · Manaus</p></div>
         <button class="btn-filtro" id="filtro" type="button">Filtrar</button>
       </div>
+      <div class="chips chips-rolagem" id="marcas" aria-label="Filtrar por marca" hidden></div>
       <div id="lista"><p class="estado">Carregando ofertas...</p></div>
     </section>
 
@@ -36,7 +41,7 @@
 
     <div class="action-bar">
       <button class="btn-vermelho" id="add" type="button">Adicionar à cesta</button>
-      <a class="btn-out" id="mapa" target="_blank" rel="noopener">Ver no mapa</a>
+      <a class="btn-out" id="mapa" target="_blank" rel="noopener">Como chegar</a>
     </div>
     <div class="toast" id="toast" role="status"></div>
   </div>

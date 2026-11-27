@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sua lista de compras e onde sai mais barato." />
+  <meta name="theme-color" content="#F20D18" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/app-192.png" />
+  <meta name="theme-color" content="#F20D18" />
+  <title>PreçoAí — Cesta</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app app-produto">
+    <header class="header prod-head">
+      <a class="btn-sq" href="index.html" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+      <h1 id="titulo">Minha cesta</h1>
+      <button class="btn-sq" id="limpar" type="button" aria-label="Limpar lista" hidden><span aria-hidden="true">🗑</span></button>
+    </header>
+    <section class="section" id="resumo" hidden></section>
+    <section class="section"><div id="lista"><p class="estado">Carregando...</p></div></section>
+    <nav class="bottom-nav" aria-label="Principal">
+      <button class="nav-item" data-nav="inicio"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/silhueta-de-icone-de-casa.png);mask-image:url(icons/silhueta-de-icone-de-casa.png)" aria-hidden="true"></i></span>Início</button>
+      <button class="nav-item" data-nav="buscar"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/procurar.png);mask-image:url(icons/procurar.png)" aria-hidden="true"></i></span>Buscar</button>
+      <button class="nav-item" data-nav="cesta"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/cesta.png);mask-image:url(icons/cesta.png)" aria-hidden="true"></i><b class="badge" id="badge"></b></span>Cesta</button>
+      <button class="nav-item" data-nav="favoritos"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/heart.png);mask-image:url(icons/heart.png)" aria-hidden="true"></i></span>Favoritos</button>
+      <button class="nav-item" data-nav="mapa"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/mapa.png);mask-image:url(icons/mapa.png)" aria-hidden="true"></i></span>Mapa</button>
+    </nav>
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+  <script type="module" src="./js/cesta.js"></script>
+</body>
+</html>

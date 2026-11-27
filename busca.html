@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Busque alimentos e marcas e compare preços em mercados de Manaus." />
+  <meta name="theme-color" content="#F20D18" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/app-192.png" />
+  <title>PreçoAí — Buscar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app app-busca">
+    <header class="header prod-head">
+      <a class="btn-sq" href="index.html" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+      <h1>Buscar</h1>
+      <a class="btn-sq" href="index.html" aria-label="Início"><i class="i" style="-webkit-mask-image:url(icons/silhueta-de-icone-de-casa.png);mask-image:url(icons/silhueta-de-icone-de-casa.png)"></i></a>
+    </header>
+
+    <!-- CAMPO + SUGESTÕES -->
+    <div class="busca-caixa">
+      <label class="pill search" for="q">
+        <i class="i" style="-webkit-mask-image:url(icons/procurar.png);mask-image:url(icons/procurar.png)" aria-hidden="true"></i>
+        <input id="q" type="search" maxlength="60" placeholder="Buscar alimento ou marca" autocomplete="off" autocapitalize="none" enterkeyhint="search"
+               role="combobox" aria-expanded="false" aria-controls="sugestoes" aria-autocomplete="list" />
+      </label>
+      <ul class="sugestoes" id="sugestoes" role="listbox" aria-label="Sugestões de busca" hidden></ul>
+    </div>
+    <div id="local"></div>
+
+    <!-- ANTES DE PESQUISAR: buscas recentes e populares -->
+    <section class="section" id="inicio-busca">
+      <div id="recentes" hidden>
+        <div class="sh"><h2>Buscas recentes</h2><button type="button" class="ver-todas" id="limpar-recentes">Limpar</button></div>
+        <div class="chips" id="recentes-lista"></div>
+      </div>
+      <div style="margin-top:18px">
+        <div class="sh"><h2>Mais procurados</h2></div>
+        <div class="chips" id="populares"></div>
+      </div>
+      <div class="grid2" id="anuncio-busca" style="margin-top:18px"></div>
+    </section>
+
+    <!-- RESULTADOS -->
+    <section class="section" id="resultados" hidden>
+      <div class="sh"><h2 id="resultados-titulo">Resultados</h2></div>
+      <div class="filtros" id="filtros" hidden>
+        <div class="filtros-linha">
+          <div class="seg" role="group" aria-label="Modo de exibição">
+            <button type="button" class="seg-b on" data-modo="produtos" aria-pressed="true">Produtos</button>
+            <button type="button" class="seg-b" data-modo="ofertas" aria-pressed="false">Todas as ofertas</button>
+          </div>
+          <label class="sel"><span class="sr">Ordenar por</span>
+            <select id="ordem"><option value="relevancia">Mais relevantes</option><option value="preco">Menor preço</option><option value="perto">Mais perto</option><option value="recente">Mais recentes</option></select>
+          </label>
+          <label class="sel"><span class="sr">Mercado</span>
+            <select id="mercado"><option value="">Todos os mercados</option></select>
+          </label>
+        </div>
+        <div class="chips" id="marcas-chips" aria-label="Filtrar por marca"></div>
+      </div>
+      <div class="grid2" id="resultados-lista" aria-live="polite"></div>
+    </section>
+
+    <nav class="bottom-nav" aria-label="Principal">
+      <button class="nav-item" data-nav="inicio"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/silhueta-de-icone-de-casa.png);mask-image:url(icons/silhueta-de-icone-de-casa.png)" aria-hidden="true"></i></span>Início</button>
+      <button class="nav-item active" data-nav="buscar" aria-current="page"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/procurar.png);mask-image:url(icons/procurar.png)" aria-hidden="true"></i></span>Buscar</button>
+      <button class="nav-item" data-nav="cesta"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/cesta.png);mask-image:url(icons/cesta.png)" aria-hidden="true"></i><b class="badge" id="badge"></b></span>Cesta</button>
+      <button class="nav-item" data-nav="favoritos"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/heart.png);mask-image:url(icons/heart.png)" aria-hidden="true"></i></span>Favoritos</button>
+      <button class="nav-item" data-nav="mapa"><span class="ico"><i class="i" style="-webkit-mask-image:url(icons/mapa.png);mask-image:url(icons/mapa.png)" aria-hidden="true"></i></span>Mapa</button>
+    </nav>
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+  <script type="module" src="./js/busca.js"></script>
+</body>
+</html>

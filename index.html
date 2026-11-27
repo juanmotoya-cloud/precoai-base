@@ -4,6 +4,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Compare preços de supermercado em Manaus com notas fiscais reais da SEFAZ-AM." />
+  <meta name="theme-color" content="#F20D18" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/app-192.png" />
   <title>PreçoAí — Início</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -28,9 +32,9 @@
     </header>
 
     <!-- LOCALIZAÇÃO -->
-    <button class="pill location" id="location-btn" type="button" aria-label="Ativar localização e buscar mercados em um raio de 3 quilômetros">
+    <button class="pill location" id="location-btn" type="button" aria-label="Usar a localização do celular para buscar os mercados mais próximos">
       <i class="i" style="-webkit-mask-image:url(icons/navigation.png);mask-image:url(icons/navigation.png)" aria-hidden="true"></i>
-      <span id="location-label">Ativar localização · Buscar mercados em até <strong>3 km</strong></span>
+      <span id="location-label">Usar minha localização · Mercados <strong>perto de você</strong></span>
     </button>
 
     <!-- BAIRRO -->
@@ -108,6 +112,7 @@
   <button class="cat" data-cat="acucares-sal-gorduras"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/casal-de-biscoitos.png);mask-image:url(icons/casal-de-biscoitos.png)" aria-hidden="true"></i></span>Açúcares, sal, óleos e gorduras</button>
   <button class="cat" data-cat="cafe-cha-especiarias"><span class="cat-icon"><i class="i" style="-webkit-mask-image:url(icons/drinque-suave.png);mask-image:url(icons/drinque-suave.png)" aria-hidden="true"></i></span>Café, chá e especiarias</button>
       </div>
+      <div class="grid2" id="anuncio-categorias"></div>
     </section>
 
     <!-- CESTA RÁPIDA -->
